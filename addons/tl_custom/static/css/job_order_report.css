@@ -1,97 +1,82 @@
-span{
-	margin: 0;
+span {
+    margin: 0;
 }
 
-.job-order-header{
-	width: 100%;
-	display: flex;
-	display: -webkit-box;
-	flex-direction: row;
-	-webkit-box-orient: horizontal;
-	justify-content: space-between;
-	-webkit-box-pack: justify;
-	margin-bottom: 1em;
+/* ------ HEADER ------- */
+
+.job-order-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1em;
 }
 
-.job-order-header-left{
-	display: flex;
-	display: -webkit-box;
-	flex-direction: column;
-	-webkit-box-orient: vertical;
-	width: 70%;
+.job-order-header-left,
+.job-order-header-right {
+    display: flex;
+    flex-direction: column;
 }
 
-.job-order-header-left-logo{
-	display: flex;
-	display: -webkit-box;
-	flex-direction: row;
-	-webkit-box-orient: horizontal;
-	vertical-align: top;
+.job-order-header-left {
+    width: 60%;
 }
 
-.job-order-header-left-logo-text{
-	display: flex;
-	display: -webkit-box;
-	flex-direction: column;
-	-webkit-box-orient: vertical;
-
+.job-order-header-right {
+    width: 40%;
+    text-align: right;
 }
 
-.job-order-header-left-logo-text div{
-	margin-bottom: -14px;
+/* ------ TABLE HEADER ------- */
+
+.table-head,
+.table-product {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
 }
 
-.job-order-header-right{
-	display: flex;
-	display: -webkit-box;
-	flex-direction: column;
-	-webkit-box-orient: vertical;
-	text-align: right;
-	width: 30%;
+.table-head thead,
+.table-product thead {
+    font-weight: bold;
+    background: #f5f5f5;
 }
 
-.job-order-header-right-child{
-	font-size: 2.1em; 
-	font-weight: bold; 
+.table-head th, .table-head td,
+.table-product th, .table-product td {
+    border: 1px solid #000;
+    padding: 4px 3px;
+    font-size: 11px;
 }
 
-.table-head{
-	width: 100%;
-	margin-bottom: 15px;
+.table-product tbody tr.bold-row {
+    font-weight: bold;
+    background: #fafafa;
 }
 
-.table-head thead{
-	font-weight: bold;
+/* Align numeric columns */
+.table-product td:nth-child(5),
+.table-product td:nth-child(7),
+.table-product td:last-child {
+    text-align: right;
 }
 
-.table-head tr{
-	border: 1px solid black;
+/* Make 'To take/cut' lines slightly smaller */
+.table-product tr.detail-row td {
+    font-size: 10px;
 }
 
-.table-head td{
-	border: 1px solid black;
+/* Remove heavy center alignment everywhere */
+tr, td {
+    text-align: left;
 }
 
-.table-product{
-	width: 100%;
+/* But keep main headers centered */
+.table-product thead tr td,
+.table-head thead tr td {
+    text-align: center;
 }
 
-.table-product thead{
-	font-weight: bold;
-}
-
-.table-product tr{
-	border: 1px solid black;
-}
-
-.table-product td{
-	border: 1px solid black;
-}
-
-tr{
-	text-align: center;
-}
-
-td{
-	padding: 5px 2px;
+/* Better spacing */
+td {
+    vertical-align: middle;
 }
