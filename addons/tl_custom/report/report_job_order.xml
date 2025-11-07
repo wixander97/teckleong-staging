@@ -3,6 +3,7 @@
   <template id="report_job_order">
     <t t-foreach="docs" t-as="o">
       <t t-call="web.basic_layout">
+
         <div class="header">
           <link rel="stylesheet" href="/tl_custom/static/css/job_order_report.css"/>
           <div class="job-order-header">
@@ -78,17 +79,15 @@
             </thead>
             <tbody>
 
-          <t t-foreach="items" t-as="item" t-index="i">
-              <tr style="font-weight:bold">
+              <t t-foreach="items" t-as="item" t-index="i">
+                <tr style="font-weight:bold">
                   <td><t t-esc="(i or 0) + 1"/></td>
                   <td class="text-left"><t t-esc="item['dimension']"/></td>
                   <td><t t-esc="item['description']"/></td>
                   <td>-</td>
                   <td>-</td>
                   <td>-</td>
-                  <td>
-                    <t t-esc="'%.2f' % (item['total_done'] or 0)"/> <t t-esc="item['uom']"/>
-                  </td>
+                  <td><t t-esc="'%.2f' % (item['total_done'] or 0)"/> <t t-esc="item['uom']"/></td>
                   <td><t t-esc="item.get('electrode_number') or ''"/></td>
                 </tr>
 
@@ -96,38 +95,50 @@
                 <t t-foreach="item['cuts']" t-as="cut">
                   <tr style="font-size:.9em">
                     <td colspan="2" class="text-right">To take/cut :</td>
+
+                    <!-- DIMENSION + BEFORE STOCK -->
                     <td>
-                      <t t-esc="cut['dimension']"/>
-                      (<t t-esc="'%.2f' % (cut['cut_balance_stock_bc'] or 0)"/> <t t-esc="item['uom']"/>)
+                      <t t-esc="cut['dimension']"/> 
+                      (Before: <t t-esc="'%.2f' % (cut['cut_balance_stock_bc'] or 0)"/> <t t-esc="item['uom']"/>)
                     </td>
+
+                    <!-- LOT -->
                     <td><t t-esc="cut['lot_name']"/></td>
+
+                    <!-- QTY USED -->
                     <td><t t-esc="'%.2f' % (cut['used_qty'] or 0)"/> <t t-esc="item['uom']"/></td>
+
+                    <!-- LOCATION -->
                     <td><t t-esc="cut['location_name']"/></td>
+
+                    <!-- QTY DONE -->
                     <td>-</td>
+
+                    <!-- BALANCE (CUT REMAINING + CHILD PIECES IF ANY) -->
                     <td>
-                      <!-- Balances per cut -->
                       <t t-foreach="cut['balances']" t-as="balance">
                         <t t-set="prod" t-value="request.env['product.product'].browse(balance['product_id'])"/>
                         <t t-esc="prod.name"/> 
                         <t t-if="prod.categ_id.is_have_width and prod.width == 0">
-                          x <t t-esc="'%.2f' % (balance['width_balance'] or 0)"/><t t-esc="prod.dimension_uom_id.name"/>
+                          x <t t-esc="'%.2f' % (balance['width_balance'] or 0)"/> <t t-esc="prod.dimension_uom_id.name"/>
                         </t>
                         <t t-if="prod.categ_id.is_have_length and prod.length == 0">
-                          x <t t-esc="'%.2f' % (balance['length_balance'] or 0)"/><t t-esc="prod.dimension_uom_id.name"/>
+                          x <t t-esc="'%.2f' % (balance['length_balance'] or 0)"/> <t t-esc="prod.dimension_uom_id.name"/>
                         </t>
                         <t t-if="prod.categ_id.is_have_kg and prod.kg == 0">
-                          x <t t-esc="'%.2f' % (balance['kg_balance'] or 0)"/><t t-esc="prod.dimension_uom_id.name"/>
+                          x <t t-esc="'%.2f' % (balance['kg_balance'] or 0)"/> <t t-esc="prod.dimension_uom_id.name"/>
                         </t>
                         (<t t-esc="'%.0f' % (balance['quantity'] or 0)"/> <t t-esc="item['uom']"/>)<br/>
                       </t>
-                      <!-- sisa balance stock dari material yang sama -->
-                      <t t-esc="cut['dimension']"/>
-                      (<t t-esc="'%.2f' % (cut['cut_balance_stock'] or 0)"/> <t t-esc="item['uom']"/>)
+                      <br/>
+                      <t t-esc="cut['dimension']"/> 
+                      (After: <t t-esc="'%.2f' % (cut['cut_balance_stock'] or 0)"/> <t t-esc="item['uom']"/>)
                     </td>
+
                   </tr>
                 </t>
-              </t>
 
+              </t>
             </tbody>
           </table>
         </div>
@@ -148,7 +159,6 @@
     <field name="dpi">90</field>
   </record>
 
-  <!-- Report action -->
   <record id="action_report_job_order" model="ir.actions.report">
     <field name="name">Job Order</field>
     <field name="model">job.order</field>

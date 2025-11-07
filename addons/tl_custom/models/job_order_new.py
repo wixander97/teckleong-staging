@@ -58,30 +58,55 @@ class JobOrder(models.Model):
     def _get_product_stock(self, parent_product):
         stocks = []
         stock_list = []
-        product_arr = self.env['product.product'].search([
-                ('parent_product_id', '=', parent_product.id),
-                ('qty_available', '>', 0)])
-        stock_quant = self.env['stock.quant'].search([
-            ('product_id', 'in', product_arr._ids),
-            ('quantity', '>', 0), ('on_hand', '=', True)])
-        if self.type == 'single_location':
-            stock_quant = stock_quant.filtered(lambda stock: stock.location_id.warehouse_id == self.location_id)
 
-        for stock in stock_quant:
-            product_length = round(stock.product_id.product_tmpl_id.length, 2)
-            product_width = round(stock.product_id.product_tmpl_id.width, 2)
+        # Get all child products under the parent (variants or cut-size products)
+        product_arr = self.env['product.product'].search([
+            ('parent_product_id', '=', parent_product.id),
+            ('qty_available', '>', 0)
+        ])
+
+        # Build base domain
+        domain = [
+            ('product_id', 'in', product_arr.ids),
+            ('quantity', '>', 0),
+            ('on_hand', '=', True),
+        ]
+
+        # Apply warehouse/location filter properly
+        if self.type == 'single_location' and self.location_id:
+            domain.append(('location_id', 'child_of', self.location_id.view_location_id.id))
+
+        stock_quant = self.env['stock.quant'].search(domain)
+
+        # Convert quant data to stock sheet objects
+        for quant in stock_quant:
+            product_length = round(quant.product_id.length, 2)
+            product_width = round(quant.product_id.width, 2)
+
             stocks.append({
-                'id': stock.id,
-                'quantity': stock.quantity,
-                'product': stock.product_id.id,
+                'id': quant.id,
+                'quantity': quant.quantity,   # Keep actual quantity (float, not forced int)
+                'product': quant.product_id.id,
                 'product_length': product_length,
                 'product_width': product_width,
-                'product_kg': round(stock.product_id.product_tmpl_id.kg, 2),
+                'product_kg': round(quant.product_id.kg, 2),
                 'remaining_areas': [(0, 0, product_width, product_length)],
                 'cuts': []
             })
+
+        # Duplicate by quantity only for whole-number pieces
         for item in stocks:
-            stock_list.extend([copy.deepcopy(item) for _ in range(int(item['quantity']))])
+            qty_int = int(item['quantity'])
+            for _ in range(qty_int):
+                stock_list.append(copy.deepcopy(item))
+
+            # If fractional remains (ex: 1.75), store one sheet with fractional marker
+            fractional_qty = item['quantity'] - qty_int
+            if fractional_qty > 0:
+                new_item = copy.deepcopy(item)
+                new_item['quantity'] = fractional_qty
+                stock_list.append(new_item)
+
         return stock_list
     
     def _set_length_width_products(self, length_width_requirement, requirements):
@@ -427,10 +452,15 @@ class JobOrder(models.Model):
                         'is_have_length': requirement_cutting.is_have_length,
                         'is_have_kg': requirement_cutting.is_have_kg,
                     })
-            length_requirement = list(filter(lambda x: x['is_have_length'] and not x['is_have_width'], requirements))
-            width_requirement = list(filter(lambda x: x['is_have_width'] and not x['is_have_length'], requirements))
-            length_width_requirement = list(filter(lambda x: x['is_have_length'] and x['is_have_width'], requirements))
-            kg_requirement = list(filter(lambda x: x['is_have_kg'], requirements))
+                    # Build lists of parent products by requirement type
+                    length_requirement = [p for p, recs in requirements.items()
+                                        if any(r['is_have_length'] and not r['is_have_width'] for r in recs)]
+                    width_requirement = [p for p, recs in requirements.items()
+                                        if any(r['is_have_width'] and not r['is_have_length'] for r in recs)]
+                    length_width_requirement = [p for p, recs in requirements.items()
+                                                if any(r['is_have_length'] and r['is_have_width'] for r in recs)]
+                    kg_requirement = [p for p, recs in requirements.items()
+                                    if any(r['is_have_kg'] for r in recs)]
         if bool(length_requirement):
             pass
         if bool(width_requirement):

@@ -87,14 +87,20 @@ class ReportJobOrder(models.AbstractModel):
                 lid = line.lot_id.id if line.lot_id else line.lot_id_stored
                 loc = line.lot_location_id.complete_name if line.lot_location_id else line.lot_location_id_stored
                 key = _skey(pid, lid, loc)
+
+                before = (line.on_hand_quantity if line.product_id and o.state != 'done'
+                        else line.on_hand_quantity_stored)
+                before = float(before or 0)
+
+                after = before - float(qty or 0)
+
                 found = next((s for s in stock if _skey(s['product_id'], s['lot_id'], s['lot_location_id']) == key), None)
-                left = (line.on_hand_quantity if line.product_id and o.state != 'done' else line.on_hand_quantity_stored)
-                left = float(left or 0) - float(qty or 0)
                 if found:
-                    found['quantity'] -= qty
+                    found['quantity'] = after
                 else:
-                    stock.append({'product_id': pid, 'lot_id': lid, 'lot_location_id': loc, 'quantity': left})
-                return left
+                    stock.append({'product_id': pid, 'lot_id': lid, 'lot_location_id': loc, 'quantity': after})
+
+                return before, after
 
             def _wh(loc):
                 if not loc:
@@ -106,12 +112,20 @@ class ReportJobOrder(models.AbstractModel):
 
             for rec in records:
                 for req in rec.job_order_line_ids:
-                    mono = rec.job_order_cutting_ids.filtered(lambda x: len(x.line_ids) == 1 and x.line_ids.job_order_line_id.id == req.id)
+                    # single-line cutting (1 JO line → 1 cut line group)
+                    mono = rec.job_order_cutting_ids.filtered(
+                        lambda x: len(x.line_ids) == 1 and x.line_ids.job_order_line_id.id == req.id
+                    )
+
                     done_q = sum(mono.line_ids.mapped('done_quantity'))
                     cuts = []
+
                     for line in mono:
                         used = sum(line.line_ids.mapped('done_quantity')) if line.is_no_cutting else 1
-                        left = _stock_update(line, used)
+
+                        # ✅ get before & after from stock tracker
+                        before_cut, left = _stock_update(line, used)
+
                         cuts.append({
                             'dimension': line.product_id.name if line.product_id else line.product_id_stored.name,
                             'lot_name': line.lot_id.name if line.lot_id else line.lot_id_stored,
@@ -125,9 +139,11 @@ class ReportJobOrder(models.AbstractModel):
                                 'kg_balance': b.kg_balance,
                                 'quantity': b.qty,
                             } for b in line.balance_ids],
+
+                            'cut_balance_stock_bc': before_cut,
                             'cut_balance_stock': left,
-                            'cut_balance_stock_bc': left,
                         })
+
                     arr.append({
                         'dimension': req.product_id.name,
                         'description': req.product_id.categ_id.name,
