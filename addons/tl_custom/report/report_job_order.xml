@@ -78,10 +78,9 @@
             </thead>
             <tbody>
 
-              <t t-foreach="items" t-as="item">
-                <!-- HEADER PER ITEM -->
-                <tr style="font-weight:bold">
-                  <td><t t-esc="loop.index"/></td>
+          <t t-foreach="items" t-as="item" t-index="i">
+              <tr style="font-weight:bold">
+                  <td><t t-esc="i + 1"/></td>
                   <td class="text-left"><t t-esc="item['dimension']"/></td>
                   <td><t t-esc="item['description']"/></td>
                   <td>-</td>
@@ -108,8 +107,7 @@
                     <td>
                       <!-- Balances per cut -->
                       <t t-foreach="cut['balances']" t-as="balance">
-                        <t t-set="product_object" t-value="request.env['product.product']"/>
-                        <t t-set="prod" t-value="product_object.search([('id','=',balance['product_id'])], limit=1)"/>
+                        <t t-set="prod" t-value="request.env['product.product'].browse(balance['product_id'])"/>
                         <t t-esc="prod.name"/> 
                         <t t-if="prod.categ_id.is_have_width and prod.width == 0">
                           x <t t-esc="'%.2f' % (balance['width_balance'] or 0)"/><t t-esc="prod.dimension_uom_id.name"/>
