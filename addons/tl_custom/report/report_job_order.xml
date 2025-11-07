@@ -80,7 +80,7 @@
 
           <t t-foreach="items" t-as="item" t-index="i">
               <tr style="font-weight:bold">
-                  <td><t t-esc="i + 1"/></td>
+                  <td><t t-esc="(i or 0) + 1"/></td>
                   <td class="text-left"><t t-esc="item['dimension']"/></td>
                   <td><t t-esc="item['description']"/></td>
                   <td>-</td>
