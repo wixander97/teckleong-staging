@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_quick_search_operator,quick.search.operator,model_quick_search_operator,,1,0,0,0
+access_quick_search_operator_manager,quick.search.operator.manager,model_quick_search_operator,quick_search_customize.group_quick_search_manager,1,1,1,1
+access_quick_search,quick.search,model_quick_search,,1,0,0,0
+access_quick_search_manager,quick.search.manager,model_quick_search,quick_search_customize.group_quick_search_manager,1,1,1,1
+access_quick_search_line,quick.search.line,model_quick_search_line,,1,0,0,0
+access_quick_search_line_manager,quick.search.line.manager,model_quick_search_line,quick_search_customize.group_quick_search_manager,1,1,1,1

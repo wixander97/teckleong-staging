@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="paperformat_tl_custom_sale_order_quotation" model="report.paperformat">
+            <field name="name">Teckleong Sale Order </field>
+            <field name="default" eval="True" />
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">80</field>
+            <field name="margin_bottom">70</field>
+            <field name="margin_left">3</field>
+            <field name="margin_right">3</field>
+            <field name="header_line" eval="False" />
+            <field name="header_spacing">75</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="sale.action_report_saleorder" model="ir.actions.report">
+            <field name="paperformat_id" ref="tl_custom.paperformat_tl_custom_sale_order_quotation"/>
+        </record>
+
+        <template id="sale.report_saleorder_document">
+            <t t-call="web.basic_layout">
+                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
+                <t t-set="forced_vat" t-value="doc.fiscal_position_id.foreign_vat"/> <!-- So that it appears in the footer of the report instead of the company VAT if it's set -->
+                <t t-set="address">
+                    <div t-field="doc.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
+                    <p t-if="doc.partner_id.vat">
+                        <t t-esc="doc.company_id.account_fiscal_country_id.vat_label or 'Tax ID'"/>: <span t-field="doc.partner_id.vat"/>
+                    </p>
+                </t>
+                <t t-if="doc.partner_shipping_id == doc.partner_invoice_id and doc.partner_invoice_id != doc.partner_id or doc.partner_shipping_id != doc.partner_invoice_id">
+                    <t t-set="information_block">
+                        <strong t-if="doc.partner_shipping_id == doc.partner_invoice_id">Invoicing and Shipping Address:</strong>
+                        <strong t-if="doc.partner_shipping_id != doc.partner_invoice_id">Invoicing Address:</strong>
+                        <div t-field="doc.partner_invoice_id"
+                        t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        <t t-if="doc.partner_shipping_id != doc.partner_invoice_id">
+                            <strong>Shipping Address:</strong>
+                            <div t-field="doc.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </t>
+                    </t>
+                </t>
+
+                <div class="header">
+                    <link rel="stylesheet" href="/tl_custom/static/css/job_order_report.css" />
+                    <link rel="stylesheet" href="/tl_custom/static/css/tl_report.css" />
+                    <div class="job-order-header" style="margin-top: 0px;">
+                        <div class="job-order-header-left">
+                            <div class="job-order-header-left-logo">
+                                <div style="margin-right: 10px;">
+                                    <img src="/tl_custom/static/img/tl_icon.png" width="100px" />
+                                </div>
+                                <div class="job-order-header-left-logo-text">
+                                    <div style="color: red; letter-spacing: 22px; font-weight: bold; font-size: 1.65em; font-family: Arial Black;">德隆金属私人有限公司</div>
+                                    <div class="d-flex" style="margin-top:5px;">
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;">TECK</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">LEONG</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">METALS</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">PTE</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:8px;">LTD</div>
+                                    </div>
+                                    <div style="font-size: 1.2em;margin-top:13px;">
+                                        <span style="margin-right: 118px;">Tel : +65 6398 0020</span><span>Fax : +65 6398 0050</span>
+                                    </div>
+                                </div>  
+                            </div>
+                        </div>
+                        <div class="job-order-header-right">
+                            <div class="job-order-header-right-child" style="margin-top: -10px">
+                                <t t-if="doc.state not in ['draft','sent']">SALES ORDER </t>
+                                <span style="font-size: 28px;">
+                                    <t t-if="doc.state in ['draft','sent']">SALES QUOTATION </t>
+                                </span>
+                            </div>
+                            <div style="font-size: 0.8em; margin-bottom: 20px;">
+                                <span>Page : </span>
+                                <span class="page" /> of <span class="topage" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex w-100">
+                        <div class="w-50" style="padding-right: 25px;">
+                            <p>
+                                <div class="font-weight-bold">Order Address :</div>
+                                <div>
+                                    <t t-if="doc.partner_invoice_id.company_type == 'person'">
+                                        <t t-if="doc.partner_invoice_id.parent_id.name">
+                                            <t t-esc="doc.partner_invoice_id.parent_id.name" />
+                                        </t>
+                                        <t t-else="">
+                                            <div class="hide-text">-</div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="doc.partner_invoice_id.name"/>
+                                    </t>
+                                </div>
+                                <div>
+                                    <t t-if="doc.partner_invoice_id.street">
+                                        <t t-esc="doc.partner_invoice_id.street" />
+                                    </t>
+                                    <t t-else="">
+                                        <div class="hide-text">-</div>
+                                    </t>
+                                </div>
+                                <div class="no-wrap">
+                                    <t t-if="doc.partner_invoice_id.street2">
+                                        <t t-esc="doc.partner_invoice_id.street2" />
+                                    </t>
+                                    <t t-else="">
+                                        <div class="hide-text">-</div>
+                                    </t>
+                                </div>
+                                <div>
+                                    <t t-if="doc.partner_invoice_id.country_id.name or doc.partner_invoice_id.zip"> 
+                                        <t t-esc="doc.partner_invoice_id.country_id.name"/> 
+                                        <t t-esc="doc.partner_invoice_id.zip"/>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="hide-text">-</div>
+                                    </t>
+                                </div>
+                            </p>
+                            <p>
+                                <div>
+                                    <span>
+                                        <t t-if="doc.partner_invoice_id.company_type == 'person'">
+                                            Attn: <t t-esc="doc.partner_invoice_id.name"/>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="hide-text">-</div>
+                                        </t>
+                                    </span>
+                                </div>
+                                <div class="d-flex t-0">
+                                    <div class="w-50">Tel: <t t-esc="doc.partner_invoice_id.phone"/></div>
+                                    <div class="w-50">Fax: <t t-esc="doc.partner_invoice_id.fax"/></div>
+                                </div>
+                                <span>Email: <t t-esc="doc.partner_invoice_id.email"/></span>
+                            </p>
+                        </div>
+                        <div class="w-50" style="padding-right: 25px;">
+                            <p>
+                                <div class="font-weight-bold">Delivery Address :</div>
+                                <div>
+                                    <t t-if="doc.self_collection_location == False">
+                                        <t t-if="doc.partner_shipping_id.company_type == 'person'">
+                                            <t t-if="doc.partner_shipping_id.parent_id.name">
+                                                <t t-esc="doc.partner_shipping_id.parent_id.name" />
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <div><t t-esc="doc.partner_shipping_id.name"/></div>
+                                        </t>
+                                        <div>
+                                            <t t-if="doc.partner_shipping_id.street">
+                                                <t t-esc="doc.partner_shipping_id.street"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </div>
+                                        <div class="no-wrap">
+                                            <t t-if="doc.partner_shipping_id.street2">
+                                                <t t-esc="doc.partner_shipping_id.street2"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </div>
+                                        <div>
+                                            <t t-if="doc.partner_shipping_id.country_id.name or doc.partner_shipping_id.zip">
+                                                <t t-esc="doc.partner_shipping_id.country_id.name"/> <t t-esc="doc.partner_shipping_id.zip"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="font-weight-bold">Self-Collection @</div>
+                                        <div>
+                                            <t t-if="doc.self_collection_location == 'amk'">
+                                                7030 Ang Mo Kio Ave 5 #01-16, Northstar@AMK
+                                            </t>
+                                            <t t-elif="doc.self_collection_location == 'kel'">
+                                                Block 28 Kelantan Road #01-127
+                                            </t>
+                                            <t t-elif="doc.self_collection_location == 'tuas'">
+                                                69Q Tuas South Ave 1 Seatown Industrial Centre
+                                            </t>
+                                        </div>
+                                        <div>
+                                            <t t-if="doc.self_collection_location == 'amk'">
+                                                Singapore 569880
+                                            </t>
+                                            <t t-elif="doc.self_collection_location == 'kel'">
+                                                Block 28 Kelantan Road #01-127 
+                                            </t>
+                                            <t t-elif="doc.self_collection_location == 'tuas'">
+                                                Singapore 637495
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+                            </p>
+
+                            <t t-if="doc.self_collection_location == False">
+                                <p>
+                                    <div>
+                                        <span>
+                                            <t t-if="doc.partner_shipping_id.company_type == 'person'">
+                                                Attn: <t t-esc="doc.partner_shipping_id.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex t-0">
+                                        <div class="w-50">Tel: <t t-esc="doc.partner_shipping_id.phone"/></div>
+                                        <div class="w-50">Fax: <t t-esc="doc.partner_shipping_id.fax"/></div>
+                                    </div>
+                                    <span>Email: <t t-esc="doc.partner_shipping_id.email"/></span>
+                                </p>
+                            </t>
+                        </div>
+                    </div> 
+                    <h2 class="mt-2 text-uppercase font-weight-bold" style="font-size: 20px;">
+                        <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
+                            <span t-if="doc.state not in ['draft','sent']">Sales Order Number</span>
+                            <span t-if="doc.state in ['draft','sent']">Sales Quotation Number</span>
+                        </t>
+                        <t t-if="env.context.get('proforma', False) or is_pro_forma">
+                            <span>Pro-Forma Invoice</span>
+                        </t> : 
+                        <span t-field="doc.name"/>
+                    </h2>
+
+
+                    <!-- <table class="table table-bordered table-sm table-details" style="margin-top:-55px" >
+                        <thead>
+                            <tr class="w-100">
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <th width="10%" scope="col">Sales Person</th>
+                                    <th width="10%" scope="col">PO Ref</th>
+                                    <th width="15%" scope="col">Cust Ref</th>
+                                    <th width="10%" scope="col">Currency</th>
+                                    <th width="20%" scope="col">Ordered By</th>
+                                    <th width="15%" scope="col">Payment Terms</th>
+                                    <th width="10%" scope="col">Date</th>
+                                </t>
+                                <t t-else="">
+                                    <th width="10%" scope="col">Sales Person</th>
+                                    <th width="15%" scope="col">Cust Ref</th>
+                                    <th width="10%" scope="col">Currency</th>
+                                    <th width="40%" scope="col">Ordered By</th>
+                                    <th width="15%" scope="col">Payment Terms</th>
+                                    <th width="10%" scope="col">Date</th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr height="57px">
+                                <td><t t-esc="doc.user_id.name" /></td>
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <td><t t-esc="doc.po_ref" /></td>
+                                </t>
+                                <td><t t-esc="doc.client_order_ref" /></td>
+                                <td><p class="m-0" t-field="doc.pricelist_id.currency_id"/></td>
+                                <td>
+                                    <t t-esc="doc.partner_id.name"/>
+                                </td>
+                                <td><t t-esc="doc.payment_term_id.name"/></td>
+                                <td><p class="m-0" t-field="doc.date_order" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                            </tr>
+                        </tbody>
+                    </table>  -->
+                </div>
+
+                <div class="page">
+                    <link rel="stylesheet" href="/tl_custom/static/css/tl_report.css" />
+                    <div class="oe_structure"/>
+                    <div class="invisible" id="informations" style="position: absolute;">
+                        <div t-if="doc.validity_date and doc.state in ['draft', 'sent']" name="expiration_date">
+                            <!-- <strong>Expiration:</strong> -->
+                            <!-- <p t-field="doc.validity_date"/> -->
+                        </div>
+                    </div>
+                    <!-- <table class="table table-bordered table-sm table-details">
+                        <thead>
+                            <tr class="w-100">
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <th width="10%" scope="col">Sales Person</th>
+                                    <th width="10%" scope="col">PO Ref</th>
+                                    <th width="15%" scope="col">Cust Ref</th>
+                                    <th width="10%" scope="col">Currency</th>
+                                    <th width="20%" scope="col">Ordered By</th>
+                                    <th width="15%" scope="col">Payment Terms</th>
+                                    <th width="10%" scope="col">Date</th>
+                                </t>
+                                <t t-else="">
+                                    <th width="10%" scope="col">Sales Person</th>
+                                    <th width="15%" scope="col">Cust Ref</th>
+                                    <th width="10%" scope="col">Currency</th>
+                                    <th width="40%" scope="col">Ordered By</th>
+                                    <th width="15%" scope="col">Payment Terms</th>
+                                    <th width="10%" scope="col">Date</th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr height="57px">
+                                <td><t t-esc="doc.user_id.name" /></td>
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <td><t t-esc="doc.po_ref" /></td>
+                                </t>
+                                <td><t t-esc="doc.client_order_ref" /></td>
+                                <td><p class="m-0" t-field="doc.pricelist_id.currency_id"/></td>
+                                <td>
+                                    <t t-esc="doc.partner_id.name"/>
+                                </td>
+                                <td><t t-esc="doc.payment_term_id.name"/></td>
+                                <td><p class="m-0" t-field="doc.date_order" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                            </tr>
+                        </tbody>
+                    </table> 
+ -->
+<!--                     <div class="d-flex w-100">
+                        <div class="w-50">
+                            <p>
+                                <div class="font-weight-bold">Order Address :</div>
+                                <div><t t-esc="doc.partner_invoice_id.parent_id.name"/></div>
+                                <div><t t-esc="doc.partner_invoice_id.street"/></div>
+                                <div><t t-esc="doc.partner_invoice_id.country_id.name"/> <t t-esc="doc.partner_invoice_id.zip"/></div>
+                            </p>
+                            <p>
+                                <div>
+                                    <span>
+                                        <t t-if="doc.partner_invoice_id.company_type == 'person'">Attn: </t><t t-esc="doc.partner_invoice_id.name"/>
+                                    </span>
+                                </div>
+                                <div class="d-flex t-0">
+                                    <div class="w-50">Tel: <t t-esc="doc.partner_invoice_id.phone"/></div>
+                                    <div class="w-50">Fax: <t t-esc="doc.partner_invoice_id.fax"/></div>
+                                </div>
+                                <span>Email: <t t-esc="doc.partner_invoice_id.email"/></span>
+                            </p>
+                        </div>
+                        <div class="w-50">
+                            <p>
+                                <div class="font-weight-bold">Delivery Address :</div>
+                                <t t-if="doc.self_collection_location == False">
+                                    <div><t t-esc="doc.partner_shipping_id.parent_id.name"/></div>
+                                    <div><t t-esc="doc.partner_shipping_id.street"/></div>
+                                    <div><t t-esc="doc.partner_shipping_id.country_id.name"/> <t t-esc="doc.partner_shipping_id.zip"/></div>
+                                </t>
+                                <t t-else="">
+                                    <div>
+                                        <t t-if="doc.self_collection_location == 'amk'">
+                                            7030 Ang Mo Kio Ave 5 #01-16, Northstar@AMK
+                                        </t>
+                                        <t t-elif="doc.self_collection_location == 'kel'">
+                                            Block 28 Kelantan Road #01-127
+                                        </t>
+                                        <t t-elif="doc.self_collection_location == 'tuas'">
+                                            69Q Tuas South Ave 1 Seatown Industrial Centre
+                                        </t>
+                                    </div>
+                                    <div>
+                                        <t t-if="doc.self_collection_location == 'amk'">
+                                            Singapore 569880
+                                        </t>
+                                        <t t-elif="doc.self_collection_location == 'kel'">
+                                            Block 28 Kelantan Road #01-127 
+                                        </t>
+                                        <t t-elif="doc.self_collection_location == 'tuas'">
+                                            Singapore 637495
+                                        </t>
+                                    </div>
+                                </t>
+                            </p>
+
+                            <p>
+                                <div>
+                                    <span>
+                                        <t t-if="doc.partner_shipping_id.company_type == 'person'">Attn: </t><t t-esc="doc.partner_shipping_id.name"/>
+                                    </span>
+                                </div>
+                                <div class="d-flex t-0">
+                                    <div class="w-50">Tel: <t t-esc="doc.partner_shipping_id.phone"/></div>
+                                    <div class="w-50">Fax: <t t-esc="doc.partner_shipping_id.fax"/></div>
+                                </div>
+                                <span>Email: <t t-esc="doc.partner_shipping_id.email"/></span>
+                            </p>
+                        </div>
+                    </div>  -->   
+
+<!--                     <h2 class="mt-2 text-uppercase font-weight-bold" style="font-size: 20px;">
+                        <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
+                            <span t-if="doc.state not in ['draft','sent']">Sales Order Number</span>
+                            <span t-if="doc.state in ['draft','sent']">Sales Quotation Number</span>
+                        </t>
+                        <t t-if="env.context.get('proforma', False) or is_pro_forma">
+                            <span>Pro-Forma Invoice</span>
+                        </t> : 
+                        <span t-field="doc.name"/>
+                    </h2> -->
+<!-- 
+                    <div class="row mt32 mb32 invisible" id="informations">
+                        <div t-if="doc.client_order_ref" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Your Reference:</strong>
+                            <p class="m-0" t-field="doc.client_order_ref"/>
+                        </div>
+                        <div t-if="doc.date_order and doc.state not in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Order Date:</strong>
+                            <p class="m-0" t-field="doc.date_order"/>
+                        </div>
+                        <div t-if="doc.date_order and doc.state in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Quotation Date:</strong>
+                            <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                        </div>
+                        <div t-if="doc.validity_date and doc.state in ['draft', 'sent']" class="col-auto col-3 mw-100 mb-2" name="expiration_date">
+                            <strong>Expiration:</strong>
+                            <p class="m-0" t-field="doc.validity_date"/>
+                        </div>
+                        <div t-if="doc.user_id.name" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Salesperson:</strong>
+                            <p class="m-0" t-field="doc.user_id"/>
+                        </div>
+                    </div> -->
+
+
+<!--                     <table class="table table-bordered table-sm table-details" style="margin-top:-55px" >
+                        <thead>
+                            <tr class="w-100">
+                                <th width="20%" scope="col">Delivery Order No</th>
+                                <th width="15%" scope="col">Invoice Ref</th>
+                                <th width="10%" scope="col">Currency</th>
+                                <th width="15%" scope="col">Ordered By</th>
+                                <th width="15%" scope="col">Payment Terms</th>
+                                <th width="10%" scope="col">Overall Disc.</th>
+                                <th width="15%" scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <t t-set="idso" t-value="request.env['stock.picking']"/>
+                                    <t t-set="nani1" t-value="idso.search([('origin', '=',doc.name)],limit=1)"/>     
+                                    <span><t t-esc="nani1.name"/></span>
+                                 </td>
+                                <td>
+                                    <t t-set="idso1" t-value="request.env['account.move']"/>
+                                    <t t-set="nani2" t-value="idso1.search([('invoice_origin', '=',doc.name)],limit=1)"/>     
+                                    <span><t t-esc="nani2.name"/></span>
+                                 </td>
+                                <td>
+                                    <p class="m-0" t-field="doc.pricelist_id.currency_id"/>
+                                </td>
+
+                                <td>
+                                    <t t-esc="doc.partner_id.name"/>
+                                    </td>
+                                <td> <t t-esc="doc.payment_term_id.name"/> </td>
+                                <td> <t t-esc="int(doc.discount_overall)"/>%</td>
+                                <td>
+                                    <p class="m-0" t-field="doc.date_order" t-options='{"format": "dd/MM/yyyy"}'/>
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>  -->   
+                    
+                    <t t-set="listTaxes" t-value="[]"/>
+                    <table class="table table-sm o_main_table table-details">
+                        <!-- In case we want to repeat the header, remove "display: table-row-group" -->
+                        <thead>
+                            <tr height="0px">
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                                <th class="no-border" width="5%"> </th>
+                            </tr>
+                            <tr>
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <th scope="col" colspan="3">Sales Person</th>
+                                    <th scope="col" colspan="3">PO Ref</th>
+                                    <th scope="col" colspan="3">Cust Ref</th>
+                                    <th scope="col" colspan="2">Currency</th>
+                                    <th scope="col" colspan="4">Ordered By</th>
+                                    <th scope="col" colspan="3">Payment Terms</th>
+                                    <th scope="col" colspan="2">Date</th>
+                                </t>
+                                <t t-else="">
+                                    <th scope="col" colspan="3">Sales Person</th>
+                                    <th scope="col" colspan="3">Cust Ref</th>
+                                    <th scope="col" colspan="2">Currency</th>
+                                    <th scope="col" colspan="4">Ordered By</th>
+                                    <th scope="col" colspan="3">Payment Terms</th>
+                                    <th scope="col" colspan="3">Valid Till</th>
+                                    <th scope="col" colspan="2">Date</th>
+                                </t>
+                            </tr>
+                            <tr>
+                                <td colspan="3"><t t-esc="doc.user_id.name" /></td>
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <td colspan="3"><t t-esc="doc.po_ref" /></td>
+                                </t>
+                                <td colspan="3"><t t-esc="doc.client_order_ref" /></td>
+                                <td colspan="2"><p class="m-0" t-field="doc.pricelist_id.currency_id"/></td>
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <td colspan="4"><t t-esc="doc.partner_id.name"/></td>
+                                </t>
+                                <t t-else="">
+                                    <td colspan="4"><t t-esc="doc.partner_id.name"/></td>
+                                </t>
+                                <td colspan="3"><t t-esc="doc.payment_term_id.name"/></td>
+                                <t t-if="doc.state in ['draft','sent']">
+                                    <td colspan="3"><p class="m-0" t-field="doc.commitment_date" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                                </t>
+                                <td colspan="2"><p class="m-0" t-field="doc.date_order" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                            </tr>
+                            <tr>
+                                <td colspan="20" class="no-border"><div class="hide-text" style="font-size: 1px;">-</div></td>
+                            </tr>
+                            <tr>
+                                <th name="th_no" colspan="1"><span>No.</span></th>
+                                <th name="th_description" colspan="6"><span>Dimensions</span></th>
+                                <th name="th_product_category" colspan="4"><span>Description</span></th>
+                                <th name="th_sn" colspan="2"><span>S/N</span></th>
+                                <th name="th_quantity" colspan="1"><span>Quantity</span></th>
+                                <th name="th_priceunit" colspan="3"><span>Unit Price</span></th>
+                                <th name="th_discount" colspan="1" groups="product.group_discount_per_so_line">
+                                    <span>Disc.%</span>
+                                </th>
+                                <th name="th_subtotal" colspan="2">
+                                    <span groups="account.group_show_line_subtotals_tax_excluded">Price</span>
+                                    <span groups="account.group_show_line_subtotals_tax_included">Total Price</span>
+                                </th>
+                            </tr>
+                           <!--  <tr class="w-100">
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <th width="10%" scope="col">Sales Person</th>
+                                    <th width="10%" scope="col">PO Ref</th>
+                                    <th width="15%" scope="col">Cust Ref</th>
+                                    <th width="10%" scope="col">Currency</th>
+                                    <th width="20%" scope="col">Ordered By</th>
+                                    <th width="15%" scope="col">Payment Terms</th>
+                                    <th width="10%" scope="col">Date</th>
+                                </t>
+                                <t t-else="">
+                                    <th width="10%" scope="col">Sales Person</th>
+                                    <th width="15%" scope="col">Cust Ref</th>
+                                    <th width="10%" scope="col">Currency</th>
+                                    <th width="40%" scope="col">Ordered By</th>
+                                    <th width="15%" scope="col">Payment Terms</th>
+                                    <th width="10%" scope="col">Date</th>
+                                </t>
+                            </tr>
+                            <tr>
+                                <td><t t-esc="doc.user_id.name" /></td>
+                                <t t-if="doc.state not in ['draft','sent']">
+                                    <td><t t-esc="doc.po_ref" /></td>
+                                </t>
+                                <td><t t-esc="doc.client_order_ref" /></td>
+                                <td><p class="m-0" t-field="doc.pricelist_id.currency_id"/></td>
+                                <td>
+                                    <t t-esc="doc.partner_id.name"/>
+                                </td>
+                                <td><t t-esc="doc.payment_term_id.name"/></td>
+                                <td><p class="m-0" t-field="doc.date_order" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                            </tr> -->
+                            <!-- <tr>
+                                <th name="th_no" width="5%"><span>No.</span></th>
+                                <th name="th_description" width="30%"><span>Dimensions</span></th>
+                                <th name="th_product_category" width="20%"><span>Description</span></th>
+                                <th name="th_sn" width="10%"><span>S/N</span></th>
+                                <th name="th_quantity" width="10%"><span>Quantity</span></th>
+                                <th name="th_priceunit" width="10%"><span>Unit Price</span></th>
+                                <th name="th_discount" width="5%" groups="product.group_discount_per_so_line">
+                                    <span>Disc.%</span>
+                                </th>
+                                <th name="th_subtotal" width="10%">
+                                    <span groups="account.group_show_line_subtotals_tax_excluded">Price</span>
+                                    <span groups="account.group_show_line_subtotals_tax_included">Total Price</span>
+                                </th>
+                            </tr> -->
+                        </thead>
+                        <tbody style="font-size:13px">
+                            <t t-set="current_subtotal" t-value="0"/>
+                            <t t-set="co" t-value="0"/>
+                            <t t-foreach="doc.custom_dimension_line_ids" t-as="lines">
+                                <t t-set="co" t-value="co+1"/>
+                                <t t-set="current_subtotal" t-value="current_subtotal + lines.subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
+                                <t t-set="current_subtotal" t-value="current_subtotal + lines.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+
+                                <tr t-att-class="' o_line_note' ">
+                                    <td colspan="1" name="td_no">
+                                        <span t-esc="co"/>
+                                    </td>
+                                    <td colspan="6" name="td_name" class="text-left"><span t-field="lines.child_product"/></td>
+                                    <td colspan="4" name="td_product_category"><span t-field="lines.parent_product_id.categ_id.name"/></td>
+                                    <td colspan="2" name="td_sn"><span t-field="lines.electrode_number" />/<br /><span t-field="lines.batch_number" /></td>
+                                    <td colspan="1" name="td_quantity">
+                                        <span t-field="lines.quantity" t-options='{"widget": "float", "precision": 2}'/> 
+                                        <span t-field="lines.product_uom_id"/>
+                                    </td>
+                                    <td colspan="3" name="td_priceunit">
+                                        <span t-field="lines.unit_price" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                    </td>
+                                    <td colspan="1" groups="product.group_discount_per_so_line">
+                                        <span t-esc="int(lines.discount) " />%                                             
+                                    </td>
+                                    <td colspan="2" name="td_subtotal">
+                                        <span t-field="lines.subtotal" t-options='{"widget": "monetary", "display_currency": doc.currency_id}' groups="account.group_show_line_subtotals_tax_excluded"/>
+                                        <span t-field="lines.price_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}' groups="account.group_show_line_subtotals_tax_included"/>
+                                    </td>
+                                </tr>
+                                <t t-if="lines.notes != False and lines.notes != ''">
+                                    <tr>
+                                        <td class="text-left" name="td_notes" colspan="20">
+                                            <b>Notes : </b><t t-esc="lines.notes" />
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <div class="clearfix" name="so_total_summary">
+                        <div id="total" class="row" name="total">
+                            <div class="d-flex flex-row col-8">
+                                <b>Remarks : </b><t t-esc="doc.remarks" />
+                            </div>
+                            <!-- <div t-attf-class="#{'col-4' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto"> -->
+                            <div t-attf-class="col-4">
+                                <table class="table table-sm">
+                                    <!-- Tax totals -->
+                                    <t t-if="doc.state in ['draft']">
+                                        <t t-set="tax_totals" t-value="json.loads(doc.tax_totals_json2)"/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-set="tax_totals" t-value="json.loads(doc.tax_totals_json)"/>
+                                    </t>
+                                    <div class="d-flex flex-row">
+                                        <!-- <t t-call="account.document_tax_totals"/> -->
+                                        <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+                                            <tr class="">
+                                                <td class="font-weight-bold" style="border-top: 2px solid black;">
+                                                    Subtotal
+                                                </td>
+                                                <td style="border-top: 2px solid black;" class="text-right">
+                                                    <span t-att-class="oe_subtotal_footer_separator" t-esc="subtotal['formatted_amount']" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold" style="border-top: 0px">
+                                                    Overall Discount
+                                                </td>
+                                                <td style="border-top: 0;" class="text-right">
+                                                    <t t-esc="int(doc.discount_overall)" />%
+                                                </td>
+                                            </tr>
+                                            <t t-set="subtotal_to_show" t-value="subtotal['name']"/>
+                                            <t t-set="subtotal_amaount" t-value="subtotal['amount']"/>
+                                            <t t-call="account.tax_groups_totals"/>
+                                        </t>
+                                        <tr>
+                                            <td style="border-top: 2px solid black;" class="font-weight-bold">Grand Total</td>
+                                            <td style="border-top: 2px solid black;" class="text-right">
+                                                <span t-esc="tax_totals['formatted_amount_total']"/>
+                                            </td>
+                                        </tr>
+                                    </div>
+                                </table>
+                            </div>
+                        </div>
+
+                       <!--  <p class="mt-2">
+                            Terms and Condition <a href="https://www.teckleongmetals.com/termsofsales">https://www.teckleongmetals.com/termsofsales</a>
+                        </p> -->
+                    </div>
+                   
+                    <div t-if="doc.signature" class="mt32 ml64 mr4 invisible" name="signature">
+                        <div class="offset-8">
+                            <strong>Signature</strong>
+                        </div>
+                        <div class="offset-8">
+                            <img t-att-src="image_data_uri(doc.signature)" class="paynow-barcode" />
+                        </div>
+                        <div class="offset-8 text-center">
+                            <p t-field="doc.signed_by"/>
+                        </div>
+                    </div>
+
+                    <div class="oe_structure invisible"/>
+                </div>
+
+                <div class="footer w-100" style="align-item: center;">
+                    <t t-call="tl_custom.cs_footer_barcode"/>
+                    <t t-call="tl_custom.cs_footer_custom"/>
+                </div>
+            </t>
+        </template>
+
+        <template id="cs_footer_custom">
+            <div class="w-100 d-flex flex-column" style="-webkit-box-orient: vertical;">
+                <div class="d-flex w-100" style="margin-bottom: -10px;">
+                    <div class="w-50" style="font-size: 0.9em;">
+                        <div>E &#38; O.E</div>
+                        <div>TLM terms and conditions of sale apply.</div>
+                        <div><a href="https://www.teckleongmetals.com/termsofsales">https://www.teckleongmetals.com/termsofsales</a></div>
+                    </div>
+                    <div class="w-50 text-right d-flex justify-content-end" style="-webkit-box-orient: vertical;">
+                        <div class="font-weight-bold" style="font-size: 1.2em;">Teck Leong Metals Pte Ltd</div>
+                        <div style="font-size: 0.9em;">7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</div>
+                    </div>
+                </div>
+                <!-- <hr class="border-black w-100" style="margin:0 0 5px 0;height:1px;background-color:black" /> -->
+                <span class="border-black" style="display: inline-block;width: 100%;border-top: 2px solid black;margin-top: -50"></span>
+                <div class="d-flex w-100 my-0">
+                    <div style="font-size: 0.7em; width: 30%;">
+                        <div><img src="/tl_custom/static/img/ftlog.png" height="80px" /></div>
+                        <div>CERT NO: SNG 01603965</div>
+                    </div>
+                    <div style="width: 70%;" class="text-right">
+                        <div class="font-weight-bold">THIS IS A COMPUTER GENERATED DOCUMENT NO SIGNATURE IS REQUIRED</div>
+                        <div>www.teckleongmetals.com  |  sales@teckleongmetals.com</div>
+                        <div class="mr-1 ml-1" style="font-size: 0.75em;">
+                            <span>CR: 74371000000R</span>
+                            <span style="margin: 0 5px">|</span>
+                            <span>CO REG NO: 200004371G</span>
+                            <span style="margin: 0 5px">|</span>
+                            <span>GST REG NO: 200004371G</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         <!--    <div class="d-flex">
+                <div class="w-50 text-left">
+                    <span> E &#38; O.E</span><br/>
+                    <span> TLM terms and conditions of sale apply. <a href="https://www.teckleongmetals.com/termsofsales">https://www.teckleongmetals.com/termsofsales</a></span>
+                </div>
+                <div class="d-flex text-right w-50 justify-content-end" style="-webkit-box-orient: vertical;">
+                    <div class="font-weight-bold" style="font-size:20px">Teck Leong Metals Pte Ltd</div>
+                    <div>7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</div>
+                </div>
+            </div>
+            <hr class="border-black w-100" style="margin:0px;height:1px;background-color:black" />
+            <div class="d-flex" style="margin-top:0px;">
+                <div class="mt-1"  style="width: 38%; ">
+                    <img src="/tl_custom/static/img/ftlog.png" style="height:90px;"/><br/>
+                    <span  style="margin-left:1px;font-size:12px;">CERT NO: SNG 01603965</span>
+                </div>
+                <div style="width: 62%;text-align:end;">
+                    <p class="m-0 p-0 hide_lastpage font-weight-bold">
+                        THIS IS A COMPUTER GENERATED DOCUMENT NO SIGNATURE IS REQUIRED
+                    </p>
+                    <span>www.teckleongmetals.com  |  sales@teckleongmetals.com</span><br/>
+                    <span  style="font-size:13px;letter-spacing: 2px;padding-left:-15px">CR: 74371000000R</span>
+                    <span class="mr-1 ml-1" style="font-size:13px">|</span>
+                    <span style="font-size:13px;letter-spacing: 2px;">CO REG NO: 200004371G</span>
+                    <span class="mr-1 ml-1" style="font-size:13px">|</span>
+                    <span style="font-size:13px;letter-spacing: 2px;">GST REG NO: 200004371G</span> 
+                </div>
+            </div> -->
+        </template>
+        
+        <template id="cs_footer_barcode" name="template_name">
+            <div class="w-100 d-flex">
+                <div>
+                    <img src="/tl_custom/static/img/barcode.png" height="100px" />
+                </div>
+                <div class="w-50 d-flex" style="-webkit-box-orient: vertical; margin-left: 15px; font-size: 0.9em">
+                    <div>Account Name: TECK LEONG METALS PTE LTD</div>
+                    <div>Development Bank of Singapore (DBS)</div>
+                    <div>Current Account: 011-9002808</div>
+                    <div>SWIFT Code / BIC DBSSSGSG</div>
+                    <div>Paynow UEN: 200004371G</div> 
+                </div>
+            </div>
+         <!--    <div class="d-flex w-100">
+                <span style="color:white;">p</span>
+                <img src="/tl_custom/static/img/barcode.png" style="height: 140px;opacity: 1.0;"/>
+                <ul class="m-0 p-2" style="list-style-type: none;width:100%;font-size:16px;">
+                    <li>Account Name: TECK LEONG METALS PTE LTD</li>
+                    <li>Development Bank of Singapore (DBS)</li>
+                    <li>Current Account: 011-9002808</li>
+                    <li>SWIFT Code / BIC DBSSSGSG</li>
+                    <li>Paynow UEN: 200004371G</li>                                       
+                </ul>
+            </div>  --> 
+        </template>
+    </data>
+</odoo>

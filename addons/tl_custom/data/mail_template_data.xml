@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_data_tl_quotation_proforma" model="mail.template">
+            <field name="name">TL Quotation Pro-forma</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">{{ object.company_id.name }} (Ref {{ object.name }})</field>
+            <field name="email_from">sales@tl.sg</field>
+            <!-- <field name="email_to">aaa</field> -->
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="width: 625px;">
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                    Dear Client,</p><br />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Thank you for
+                    giving us an opportunity to assist you.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Our Pro-forma Invoice
+                    <t t-out="object.name or ''" /> amounting to S$<t t-out="'%.2f'% object.substitute_total or ''" /> is ready for your kind review and action. 
+                    </p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Please feel free
+                    to contact us if you have further questions.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Hope
+                    to hear from you soon!</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Besta
+                    Regards</p>
+                    <p class="font-weight-bold" style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><span style="font-weight: bold !important;">Teck Leong Metals Pte Ltd</span><br style="box-sizing:border-box;" />
+                    Tel:
+                    +65 6398 0020 Fax: +65 6398 0050<br style="box-sizing:border-box;" />
+                    WhatsApp: +65 9638
+                    0020</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Head
+                    Office: 7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Website:
+                    <a href="http://www.teckleongmetals.com/" style="text-decoration:none;box-sizing:border-box;background-color:transparent;color: #01666b;">www.teckleongmetals.com</a></p><br />
+                    <img src="/tl_custom/static/img/tl_email_img.png"  />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                    <p style="text-align: justify; margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Confidentiality
+                    caution and disclaimer: This message, together with any attachment,
+                    is intended only for the use of the individual or entity to which it
+                    is addressed, and may contain information that is legally privileged
+                    and confidential. If you are not the intended recipient,
+                    please be informed that any dissemination, distribution or copying of
+                    any part of this message, or any part of any of its attachments (if
+                    any) is strictly prohibited. Kindly note that email
+                    communications are not secured, and therefore are susceptible
+                    to alteration. Teck Leong Metals Pte Ltd will not accept legal
+                    responsibility for the contents of this message.</p>
+
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_template_data_tl_quotation" model="mail.template">
+            <field name="name">TL Quotation</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">{{ object.company_id.name }} (Ref {{ object.name }})</field>
+            <field name="email_from">sales@tl.sg</field>
+            <!-- <field name="email_to">aaa</field> -->
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="width: 625px;">
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                    Dear Client,</p><br />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Thank you for
+                    giving us an opportunity to assist you.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Our quotation
+                    <t t-out="object.name or ''" /> amounting to S$<t t-out="'%.2f'% object.substitute_total or ''" /> is ready for your kind review. 
+                    </p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Please feel free
+                    to contact us if you have further questions.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Hope
+                    to hear from you soon!</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Best
+                    Regards</p>
+                    <p class="font-weight-bold" style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><span style="font-weight: bold !important;">Teck Leong Metals Pte Ltd</span><br style="box-sizing:border-box;" />
+                    Tel:
+                    +65 6398 0020 Fax: +65 6398 0050<br style="box-sizing:border-box;" />
+                    WhatsApp: +65 9638
+                    0020</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Head
+                    Office: 7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Website:
+                    <a href="http://www.teckleongmetals.com/" style="text-decoration:none;box-sizing:border-box;background-color:transparent;color: #01666b;">www.teckleongmetals.com</a></p><br />
+                    <img src="/tl_custom/static/img/tl_email_img.png"  />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                    <p style="text-align: justify; margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Confidentiality
+                    caution and disclaimer: This message, together with any attachment,
+                    is intended only for the use of the individual or entity to which it
+                    is addressed, and may contain information that is legally privileged
+                    and confidential. If you are not the intended recipient,
+                    please be informed that any dissemination, distribution or copying of
+                    any part of this message, or any part of any of its attachments (if
+                    any) is strictly prohibited. Kindly note that email
+                    communications are not secured, and therefore are susceptible
+                    to alteration. Teck Leong Metals Pte Ltd will not accept legal
+                    responsibility for the contents of this message.</p>
+
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_template_data_tl_quotation_expiration" model="mail.template">
+            <field name="name">TL Quotation Expiration</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">Quotation Expiry Reminder</field>
+            <field name="email_from">sales@tl.sg</field>
+            <!-- <field name="email_to">aaa</field> -->
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="width: 625px;">
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                    Dear Client,</p><br />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Thank you for
+                    giving us an opportunity to assist you.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Our quotation
+                    <t t-out="object.name or ''" /> amounting to S$<t t-out="'%.2f'% object.substitute_total or ''" /> is about to expire. 
+                    </p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Should you need our assistance to extend or requote, please feel free to contact our office.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Hope
+                    to hear from you soon!</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Best
+                    Regards</p>
+                    <p class="font-weight-bold" style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><span style="font-weight: bold !important;">Teck Leong Metals Pte Ltd</span><br style="box-sizing:border-box;" />
+                    Tel:
+                    +65 6398 0020 Fax: +65 6398 0050<br style="box-sizing:border-box;" />
+                    WhatsApp: +65 9638
+                    0020</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Head
+                    Office: 7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Website:
+                    <a href="http://www.teckleongmetals.com/" style="text-decoration:none;box-sizing:border-box;background-color:transparent;color: #01666b;">www.teckleongmetals.com</a></p><br />
+                    <img src="/tl_custom/static/img/tl_email_img.png"  />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                    <p style="text-align: justify; margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Confidentiality
+                    caution and disclaimer: This message, together with any attachment,
+                    is intended only for the use of the individual or entity to which it
+                    is addressed, and may contain information that is legally privileged
+                    and confidential. If you are not the intended recipient,
+                    please be informed that any dissemination, distribution or copying of
+                    any part of this message, or any part of any of its attachments (if
+                    any) is strictly prohibited. Kindly note that email
+                    communications are not secured, and therefore are susceptible
+                    to alteration. Teck Leong Metals Pte Ltd will not accept legal
+                    responsibility for the contents of this message.</p>
+
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                </div>
+            </field>
+        </record>
+
+        <record id="mail_template_data_tl_invoice" model="mail.template">
+            <field name="name">TL Invoice</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="subject">TL Invoice</field>
+            <field name="email_from">sales@tl.sg</field>
+            <!-- <field name="email_to">aaa</field> -->
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;width: 625px;" width="625px">
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                    Dear 
+                        <t t-out="object.partner_id.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false" />,
+                        <t t-if="object.partner_id.parent_id">
+                            (<t t-out="object.partner_id.parent_id.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false" />)
+                        </t></p><br style="box-sizing:border-box;" />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Here is your invoice (ref: <t t-out="object.sale_order_id.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false"></t>) amounting to S$<t t-out="'%.2f'% object.amount_total_signed or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false"></t> from Teck Leong Metals Pte Ltd. Please remit payment at your earliest convenience</p><p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 0px;">Kindly refer to the following Invoice number for your payment:</p><p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;  margin-bottom: 10px;"><t t-out="object.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false"></t></p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Do inform our office when you have completed the payment so that we can proceed with your order.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Thank you for your order and to hear from you soon!</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-top: 10px;"></p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Best
+                    Regards</p>
+                    <p class="font-weight-bold" style="font-weight:500;margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><span style="box-sizing:border-box;font-weight: bold !important;">Teck Leong Metals Pte Ltd</span><br style="box-sizing:border-box;" />
+                    Tel:
+                    +65 6398 0020 Fax: +65 6398 0050<br style="box-sizing:border-box;" />
+                    WhatsApp: +65 9638
+                    0020</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Head
+                    Office: 7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Website:
+                    <a href="http://www.teckleongmetals.com/" style="text-decoration:none;box-sizing:border-box;background-color:transparent;color: #01666b;">www.teckleongmetals.com</a></p><br style="box-sizing:border-box;" />
+                    <img src="/tl_custom/static/img/tl_email_img.png" style="border-style: none; box-sizing: border-box; vertical-align: middle; width: 625px;" width="625" height="286" />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                    <p style="text-align: justify; margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Confidentiality
+                    caution and disclaimer: This message, together with any attachment,
+                    is intended only for the use of the individual or entity to which it
+                    is addressed, and may contain information that is legally privileged
+                    and confidential. If you are not the intended recipient,
+                    please be informed that any dissemination, distribution or copying of
+                    any part of this message, or any part of any of its attachments (if
+                    any) is strictly prohibited. Kindly note that email
+                    communications are not secured, and therefore are susceptible
+                    to alteration. Teck Leong Metals Pte Ltd will not accept legal
+                    responsibility for the contents of this message.</p>
+
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                </div>
+            
+            </field>
+        </record>
+
+        <record id="mail_template_data_tl_invoice_self_pickup" model="mail.template">
+            <field name="name">TL Invoice: Self-Pickup</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="subject">TL Invoice: Self-Pickup</field>
+            <field name="email_from">sales@tl.sg</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;width: 625px;" width="625px">
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                        Dear 
+                        <t t-out="object.partner_id.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false" />,
+                        <t t-if="object.partner_id.parent_id">
+                            (<t t-out="object.partner_id.parent_id.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false" />)
+                        </t>
+                    </p><br style="box-sizing:border-box;" />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Here is your invoice (ref: <t t-out="object.sale_order_id.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false"></t>) amounting to S$<t t-out="'%.2f'% object.amount_total_signed or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false"></t> from Teck Leong Metals Pte Ltd. Please remit payment at your earliest convenience</p><p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 0px;">Kindly refer to the following Invoice number for your payment:</p><p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;  margin-bottom: 10px;"><t t-out="object.name or ''" data-oe-t-inline="true" style="box-sizing:border-box;" contenteditable="false"></t></p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Do inform our office when you have completed the payment so that we can proceed with your order.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Upon completion of your order, the collection address will be as follows:</p>
+
+                    <t t-if="object.self_collection_location == 'kel'">
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            28 Kelantan Road
+                        </p>
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            #01-127
+                        </p>
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            Singapore 200028
+                        </p>
+                        <br style="box-sizing:border-box;" />
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            For directions to the above address, please <a href="https://www.google.com/maps/dir/''/%2301-127,+28+Kelantan+Rd,+Block+28,+Singapore+200028/@1.3059617,103.7872198,12z/data=!3m1!4b1!4m8!4m7!1m0!1m5!1m1!1s0x31da19b79a9b7d41:0x679161076ad71305!2m2!1d103.8572604!2d1.3059627">click here</a>
+                        </p>
+                    </t>
+                    <t t-elif="object.self_collection_location == 'amk'">
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            7030 Ang Mo Kio Ave 5
+                        </p>
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            #B1-03/04
+                        </p>
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            Northstar@AMK
+                        </p>
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            Singapore 569880
+                        </p>
+                        <br style="box-sizing:border-box;" />
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            For directions to the above address, please <a href="https://www.google.com/maps/dir/''/7030+Ang+Mo+Kio+Ave+5,+Singapore+569880/data=!4m5!4m4!1m0!1m2!1m1!1s0x31da165c757e7203:0x305dd77bfdd769f7?sa=X&amp;ved=0ahUKEwiOgrKgtY_LAhVkI6YKHRIkDJAQiBMIQzAD">click here</a>
+                        </p>
+                    </t>
+                    <t t-elif="object.self_collection_location == 'tuas'">
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            69Q Tuas South Ave 1
+                        </p>
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            Singapore 637495
+                        </p>
+                        <br style="box-sizing:border-box;" />
+                        <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                            For directions to the above address, please <a href="https://www.google.com.sg/maps/place/69Q+Tuas+South+Ave+1,+Singapore+637495/@1.3133484,103.6257153,17z/data=!3m1!4b1!4m5!3m4!1s0x31da060c2c178c3b:0xcaa25a662097089b!8m2!3d1.313343!4d103.627904">click here</a>
+                        </p>
+                    </t>
+
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Thank you for your order and to hear from you soon!</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-top: 10px;"></p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif; margin-bottom: 10px;">Best
+                    Regards</p>
+                    <p class="font-weight-bold" style="font-weight:500;margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><span style="box-sizing:border-box;font-weight: bold !important;">Teck Leong Metals Pte Ltd</span><br style="box-sizing:border-box;" />
+                    Tel:
+                    +65 6398 0020 Fax: +65 6398 0050<br style="box-sizing:border-box;" />
+                    WhatsApp: +65 9638
+                    0020</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Head
+                    Office: 7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Website:
+                    <a href="http://www.teckleongmetals.com/" style="text-decoration:none;box-sizing:border-box;background-color:transparent;color: #01666b;">www.teckleongmetals.com</a></p><br style="box-sizing:border-box;" />
+                    <img src="/tl_custom/static/img/tl_email_img.png" style="border-style: none; box-sizing: border-box; vertical-align: middle; width: 625px;" width="625" height="286" />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                    <p style="text-align: justify; margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Confidentiality
+                    caution and disclaimer: This message, together with any attachment,
+                    is intended only for the use of the individual or entity to which it
+                    is addressed, and may contain information that is legally privileged
+                    and confidential. If you are not the intended recipient,
+                    please be informed that any dissemination, distribution or copying of
+                    any part of this message, or any part of any of its attachments (if
+                    any) is strictly prohibited. Kindly note that email
+                    communications are not secured, and therefore are susceptible
+                    to alteration. Teck Leong Metals Pte Ltd will not accept legal
+                    responsibility for the contents of this message.</p>
+
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                </div>
+            
+            </field>
+        </record>
+    </data>
+</odoo>

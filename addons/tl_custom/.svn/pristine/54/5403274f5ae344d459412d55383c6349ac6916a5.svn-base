@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_teckleong_purchase_creation_wizard" model="ir.ui.view">
+        <field name="name">teckleong.purchase.creation.wizard</field>
+        <field name="model">teckleong.purchase.creation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Purchase Creation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" invisible="1" />
+                            <field name="partner_id" required="1" domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" />
+                            <field name="sale_id" invisible="1" />
+                            <field name="company_id" invisible="1" />
+                            <!-- <field name="picking_type_id" domain="[('code', '=', 'incoming'), |, ('warehouse_id', '=', False), ('warehouse_id.company_id', '=', company_id)]" /> -->
+                            <field name="picking_type_id" domain="[('code', '=', 'incoming'), ('name', '=', 'Receipts')]" required="1" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" />
+                            <field name="shipping_term" required="1" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Products">
+                            <field name="line_ids">
+                                <tree editable="bottom" create="0" delete="0">
+                                    <field name="is_parent_id" invisible="1" force_save="1"/>
+                                    <field name="name" invisible="1" />
+                                    <field name="is_check" nolabel="1" />
+                                    <field name="product_id" readonly="1" force_save="1"  />
+                                    <field name="electrode_number" />
+                                    <field name="batch_number" />
+                                    <field name="quantity" force_save="1" />
+                                    <field name="diameter" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <!-- <field name="height" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" /> -->
+                                    <field name="width" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="thickness" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="length" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="kg" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="across_flat" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="width_2" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="mesh_number" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="hole_diameter" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="pitch" force_save="1"  attrs="{'readonly': [('is_parent_id', '=', False)]}" />
+                                    <field name="dimension_uom_id" force_save="1" invisible="0" />
+                                    <field name="product_uom_id" force_save="1" invisible="0" />
+                                    <field name="custom_dimension_line_id" invisible ="0" force_save="1" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="teckleong_purchase_creation_wizard" model="ir.actions.act_window">
+        <field name="name">Purchase Creation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">teckleong.purchase.creation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_teckleong_purchase_creation_wizard" />
+        <field name="target">new</field>
+    </record>
+</odoo>

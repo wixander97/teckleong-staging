@@ -1,0 +1,51 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+import json
+import time
+from ast import literal_eval
+from datetime import date, timedelta
+from itertools import groupby
+from operator import attrgetter, itemgetter
+from collections import defaultdict
+
+from odoo import SUPERUSER_ID, _, api, fields, models
+from odoo.addons.stock.models.stock_move import PROCUREMENT_PRIORITIES
+from odoo.exceptions import UserError
+from odoo.osv import expression
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, format_datetime
+from odoo.tools.float_utils import float_compare, float_is_zero, float_round
+from odoo.tools.misc import format_date
+from odoo.exceptions import UserError, ValidationError, AccessError
+
+class Picking(models.Model):
+    _inherit = "stock.picking"
+
+    def button_validate(self):
+        res = super(Picking, self).button_validate()
+
+        if self.origin:
+            sales = self.env['sale.order'].search([('name', '=', self.origin)])
+
+            if sales:
+                job_order = self.env['job.order'].search([('sale_order_id', '=', sales.id)])
+
+                if job_order:
+                    for job in job_order:
+                        if job.state != 'done':
+                            raise ValidationError("There is still Job Order that are not Done yet.")
+
+        return res
+
+    teckleong_stock_type = fields.Selection([
+        ('self_collection', 'Self Collection'),
+        ('delivery', 'Delivery'),
+    ], string='Stock Type', default='self_collection')
+
+    po_ref = fields.Char('PO Ref')
+    customer_ref = fields.Char('Customer Ref')
+    self_collection_location = fields.Selection([
+        ('amk','AMK'),
+        ( 'kel', 'KEL'),
+        ('tuas', 'TUAS'),
+    ],string='Self Collection location')

@@ -1,0 +1,33 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+import logging
+
+from psycopg2 import Error, OperationalError
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError, ValidationError
+from odoo.osv import expression
+from odoo.tools.float_utils import float_compare, float_is_zero
+
+_logger = logging.getLogger(__name__)
+
+
+class StockQuant(models.Model):
+    _inherit = 'stock.quant'
+
+    def name_get(self):
+        stock_list = []
+
+        for record in self:
+            name = ''
+
+            if record.product_id:
+                name += record.product_id.name
+
+            if record.lot_id:
+                name += '(' + record.lot_id.name + ')'
+
+            stock_list.append((record.id, name))
+
+        return stock_list

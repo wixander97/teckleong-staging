@@ -1,0 +1,71 @@
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError, AccessError
+from odoo import SUPERUSER_ID
+import re
+
+import logging
+_logger = logging.getLogger(__name__)
+
+   
+class AccountMove(models.Model):
+    _inherit = "account.move"
+
+    @api.onchange('discount_overall')
+    def _discount_overall(self):
+        if self.invoice_line_ids:
+            for line_id in self.invoice_line_ids:
+                line_id.update({
+                    'discount_overall_id':self.discount_overall,
+                    })
+                      
+    po_ref = fields.Char('PO Ref')
+    discount_overall = fields.Float('Overall Discount %')
+
+class AccountMoveLine(models.Model):
+    _inherit = "account.move.line"
+    discount_overall_id = fields.Float('Overall Discount %')
+
+    @api.onchange('quantity', 'discount', 'price_unit', 'tax_ids','discount_overall_id')
+    def _onchange_price_subtotal(self):
+        for line in self:
+            if not line.move_id.is_invoice(include_receipts=True):
+                continue
+
+            line.update(line._get_price_total_and_subtotal())
+            line.update(line._get_fields_onchange_subtotal())
+
+    @api.model
+    def _get_price_total_and_subtotal_model(self, price_unit, quantity, discount, currency, product, partner, taxes, move_type):
+        ''' This method is used to compute 'price_total' & 'price_subtotal'.
+
+        :param price_unit:  The current price unit.
+        :param quantity:    The current quantity.
+        :param discount:    The current discount.
+        :param currency:    The line's currency.
+        :param product:     The line's product.
+        :param partner:     The line's partner.
+        :param taxes:       The applied taxes.
+        :param move_type:   The type of the move.
+        :return:            A dictionary containing 'price_subtotal' & 'price_total'.
+        '''
+        res = {}
+        # Compute 'price_subtotal'.
+        line_discount_price_unit = price_unit * (1 - ((discount + self.discount_overall_id) / 100.0))
+        # line_discount_price_unit = price_unit * (1 - ((discount + 10) / 100.0))
+        subtotal = quantity * line_discount_price_unit
+        # Compute 'price_total'.
+        if taxes:
+            force_sign = -1 if move_type in ('out_invoice', 'in_refund', 'out_receipt') else 1
+            taxes_res = taxes._origin.with_context(force_sign=force_sign).compute_all(line_discount_price_unit,
+                quantity=quantity, currency=currency, product=product, partner=partner, is_refund=move_type in ('out_refund', 'in_refund'))
+            res['price_subtotal'] = taxes_res['total_excluded']
+            res['price_total'] = taxes_res['total_included']
+        else:
+            res['price_total'] = res['price_subtotal'] = subtotal
+        #In case of multi currency, round before it's use for computing debit credit
+        if currency:
+            res = {k: currency.round(v) for k, v in res.items()}
+        return res
+
+
+

@@ -1,0 +1,224 @@
+# -*- coding: utf-8 -*-
+#################################################################################
+# Author      : Webkul Software Pvt. Ltd. (<https://webkul.com/>)
+# Copyright(c): 2015-Present Webkul Software Pvt. Ltd.
+# License URL : https://store.webkul.com/license.html/
+# All Rights Reserved.
+#
+#
+#
+# This program is copyright property of the author mentioned above.
+# You can`t redistribute it and/or modify it.
+#
+#
+# You should have received a copy of the License along with this program.
+# If not, see <https://store.webkul.com/license.html/>
+#################################################################################
+
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError, AccessError
+from odoo import SUPERUSER_ID
+import re
+
+import logging
+_logger = logging.getLogger(__name__)
+
+class ProductTemplate(models.Model):
+    _inherit = "product.template"
+
+    def action_get_cost_from_balance_for_kg_product(self):
+        job_cutting_balance_rec = self.env['job.order.cutting.balance'].search([('cutting_id.product_id.parent_product_id', '=', self.parent_product_id.id), ('kg_balance', '=', self.kg)]) + self.env['job.order.cutting.balance'].search([('cutting_id.product_id_stored.parent_product_id', '=', self.parent_product_id.id), ('kg_balance', '=', self.kg)])
+
+        if job_cutting_balance_rec:
+            job_order_cutting_balance = job_cutting_balance_rec[0]
+
+            product = job_order_cutting_balance.cutting_id.product_id if job_order_cutting_balance.cutting_id.product_id else job_order_cutting_balance.cutting_id.product_id_stored
+
+            if product.standard_price > 0:
+                self.standard_price = product.cost_per_kg * self.kg
+
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        default = dict(default or {})
+
+        if self.default_code:
+            default['default_code'] = self.default_code
+
+        return super(ProductTemplate, self).copy(default)
+
+    @api.model
+    def create(self, vals):
+        if vals.get('parent_product_id'):
+            parent_product = self.env['product.product'].browse(vals['parent_product_id'])
+
+            vals['dimension_uom_id'] = parent_product.dimension_uom_id.id
+
+            vals['diameter'] = parent_product.diameter if parent_product.categ_id.is_have_diameter else False
+            vals['thickness'] = parent_product.thickness if parent_product.categ_id.is_have_thickness else False
+            vals['across_flat'] = parent_product.across_flat if parent_product.categ_id.is_have_across_flat else False
+            vals['mesh_number'] = parent_product.mesh_number if parent_product.categ_id.is_have_mesh_number else False
+            vals['mesh_size'] = parent_product.mesh_size if parent_product.categ_id.is_have_mesh_size else False
+            vals['hole_diameter'] = parent_product.hole_diameter if parent_product.categ_id.is_have_hole_diameter else False
+            vals['width_2'] = parent_product.width_2 if parent_product.categ_id.is_have_width_2 else False
+            vals['pitch'] = parent_product.pitch if parent_product.categ_id.is_have_pitch else False
+            vals['inner_diameter'] = parent_product.inner_diameter if parent_product.categ_id.is_have_inner_diameter else False
+
+
+            if parent_product.categ_id.is_have_length and parent_product.length != 0:
+                vals['length'] = parent_product.length
+
+            if parent_product.categ_id.is_have_width and parent_product.width != 0:
+                vals['width'] = parent_product.width
+
+            if parent_product.categ_id.is_have_kg and parent_product.kg != 0:
+                vals['kg'] = parent_product.kg
+
+        if vals.get('categ_id'):
+            product_category = self.env['product.category'].browse(vals['categ_id'])
+
+            if product_category.formula == 'formula_1':
+                if vals.get('thickness') and vals.get('width') and vals.get('width_2') and vals.get('length'):
+                    vals['weight'] = vals['thickness'] * (vals['width'] + vals['width_2'] * vals['length'] * product_category.density)
+
+            elif product_category.formula == 'formula_2':
+                if vals.get('thickness') and vals.get('width') and vals.get('length'):
+                    vals['weight'] = vals['thickness'] * vals['width'] * vals['length'] * product_category.density
+                    
+            elif product_category.formula == 'formula_3':
+                if vals.get('diameter') and vals.get('length'):
+                    vals['weight'] = 22 / 7  * (vals['diameter'] * 0.5) * (vals['diameter'] * 0.5) * vals['length'] * product_category.density
+        
+        res = super(ProductTemplate, self).create(vals)
+
+        if not vals.get('is_parent_product') and not vals.get('parent_product_id'):
+            res.parent_product_id = res.product_variant_id.id
+
+        return res
+    @api.depends('weight', 'standard_price')
+    def _compute_cost_per_kg(self):
+        for rec in self:
+            if rec.standard_price <= 0:
+                rec.cost_per_kg = 0
+            elif rec.kg > 0:
+                rec.cost_per_kg = rec.standard_price / rec.kg  
+            elif rec.weight <= 0: 
+                rec.cost_per_kg = 0   
+            else:
+                rec.cost_per_kg =  rec.standard_price / rec.weight 
+
+    @api.onchange('diameter', 'width', 'thickness', 'length', 'kg', 'across_flat', 'mesh_number', 'hole_diameter', 'width_2', 'pitch', 'inner_diameter')
+    def onchange_dimension(self):
+        density = self.categ_id.density
+        formula = self.categ_id.formula
+
+        if formula == 'formula_1':
+            self.weight = self.thickness * (self.width + self.width_2) * self.length * density
+            
+        elif formula == 'formula_2':
+            self.weight = self.thickness * self.width * self.length * density
+            
+        elif formula == 'formula_3':
+            self.weight = 22 / 7  * (self.diameter * 0.5) * (self.diameter * 0.5) * self.length * density
+            
+    @api.onchange('categ_id')
+    def onchange_categ_id(self):
+        self.diameter = 0
+        # self.height = 0
+        self.width = 0
+        self.thickness = 0
+        self.length = 0
+        self.kg = 0
+        
+        # self.outer_diameter = 0
+        self.across_flat = 0
+        # self.breadth = 0
+        self.mesh_number = 0
+        self.mesh_size = 0
+        self.hole_diameter = 0
+        # self.number = 0
+        # self.opening_dimension = 0
+        # self.metric_number = 0
+        # self.size = 0
+        self.width_2 = 0
+        self.pitch = 0
+        self.inner_diameter = 0
+        
+        self.parent_product_id = ''
+        self.default_code = ''
+
+    @api.onchange('parent_product_id')
+    def onchange_parent_product_id(self):
+        if self.parent_product_id.product_tmpl_id.default_code:
+            self.default_code = self.parent_product_id.product_tmpl_id.default_code + '-'
+
+        self.diameter = self.parent_product_id.product_tmpl_id.diameter
+        self.width = self.parent_product_id.product_tmpl_id.width
+        self.thickness = self.parent_product_id.product_tmpl_id.thickness
+        self.length = self.parent_product_id.product_tmpl_id.length
+        self.kg = self.parent_product_id.product_tmpl_id.kg
+        self.across_flat = self.parent_product_id.product_tmpl_id.across_flat
+        self.mesh_number = self.parent_product_id.product_tmpl_id.mesh_number
+        self.mesh_size = self.parent_product_id.product_tmpl_id.mesh_size
+        self.hole_diameter = self.parent_product_id.product_tmpl_id.hole_diameter
+        self.width_2 = self.parent_product_id.product_tmpl_id.width_2
+        self.pitch = self.parent_product_id.product_tmpl_id.pitch
+        self.inner_diameter = self.parent_product_id.product_tmpl_id.inner_diameter
+
+        self.dimension_uom_id = self.parent_product_id.product_tmpl_id.dimension_uom_id
+
+        self.name = self.parent_product_id.product_tmpl_id.name
+
+    @api.onchange('list_price')
+    def onchange_list_price_tl(self):
+        if self.list_price < self.standard_price:
+            raise ValidationError("Sale Price cannot be lower than the Cost Price.")
+
+    width = fields.Float('Width', digits=(12,2))
+    length = fields.Float('Length', digits=(12,2))
+    # height = fields.Float('Height')
+    thickness = fields.Float('Thickness', digits=(12,2))
+    diameter = fields.Float('Diameter(OD)', digits=(12,2))
+    kg = fields.Float('Kg', digits=(12,2))
+
+    # outer_diameter  = fields.Float('Outer Diameter')
+    across_flat = fields.Float('Across Flat', digits=(12,2))
+    # breadth = fields.Float('Breadth')
+    mesh_number = fields.Float('Mesh Number', digits=(12,2))
+    mesh_size = fields.Float('Mesh Size', digits=(12,2))
+    hole_diameter = fields.Float('Hole Diameter', digits=(12,2))
+    # number = fields.Float('Number')
+    # opening_dimension = fields.Float('Opening Dimension')
+    # metric_number = fields.Float('Metric Number')
+    # size = fields.Float('Size')  
+    width_2 = fields.Float('Width 2', digits=(12,2))
+    pitch = fields.Float('Pitch', digits=(12,2))
+    inner_diameter = fields.Float('Inner Diameter', digits=(12,2))
+    cost_per_kg = fields.Float('Cost/Kg',compute='_compute_cost_per_kg')
+    parent_product_id = fields.Many2one('product.product', 'Parent Product')
+    master_width = fields.Float('Width',related='parent_product_id.product_tmpl_id.width')
+    master_length = fields.Float('Length',related='parent_product_id.product_tmpl_id.length')
+    master_kg = fields.Float('Kg',related='parent_product_id.product_tmpl_id.kg')
+    is_parent_product = fields.Boolean('Is Parent Product')
+    dimension_uom_id = fields.Many2one('uom.uom', string='Dimension UoM')
+    is_have_diameter = fields.Boolean('Have Diameter', related='categ_id.is_have_diameter')
+    # is_have_height = fields.Boolean('Have Height', related='categ_id.is_have_height')
+    is_have_width = fields.Boolean('Have Width', related='categ_id.is_have_width')
+    is_have_thickness = fields.Boolean('Have Thickness', related='categ_id.is_have_thickness')
+    is_have_length = fields.Boolean('Have Length', related='categ_id.is_have_length')
+    is_have_kg = fields.Boolean('Have Kg', related='categ_id.is_have_kg')
+
+    # is_have_outer_diameter = fields.Boolean('Outer Diameter',related='categ_id.is_have_outer_diameter')
+    is_have_across_flat = fields.Boolean('Across Flat',related='categ_id.is_have_across_flat')
+    # is_have_breadth = fields.Boolean('Breadth',related='categ_id.is_have_breadth')
+    is_have_mesh_number = fields.Boolean('Mesh Number',related='categ_id.is_have_mesh_number')
+    is_have_mesh_size = fields.Boolean('Mesh Size',related='categ_id.is_have_mesh_size')
+    is_have_hole_diameter = fields.Boolean('Hole Diameter',related='categ_id.is_have_hole_diameter')
+    # is_have_number = fields.Boolean('Number',related='categ_id.is_have_number')
+    # is_have_opening_dimension = fields.Boolean('Opening Dimension',related='categ_id.is_have_opening_dimension')
+    # is_have_metric_number = fields.Boolean('Metric Number',related='categ_id.is_have_metric_number')
+    # is_have_size = fields.Boolean('Size',related='categ_id.is_have_size')
+    is_have_width_2 = fields.Boolean('Width 2', related='categ_id.is_have_width_2')
+    is_have_pitch = fields.Boolean('Pitch', related='categ_id.is_have_pitch')
+    is_have_inner_diameter = fields.Boolean('Inner Diameter', related='categ_id.is_have_inner_diameter')
+
+    is_trading_route = fields.Boolean('Trading Route')

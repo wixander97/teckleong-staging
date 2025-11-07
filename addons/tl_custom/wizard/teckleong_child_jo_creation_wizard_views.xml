@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_teckleong_child_jo_creation_wizard" model="ir.ui.view">
+        <field name="name">teckleong.child.jo.creation.wizard</field>
+        <field name="model">teckleong.child.jo.creation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Creation JO Creation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" invisible="1" />
+                            <field name="jo_id" invisible="1" />
+                            <field name="location_id" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" force_save="1" required="1" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Products">
+                            <field name="line_ids">
+                                <tree editable="bottom" create="0" delete="0">
+                                    <field name="parent_id" invisible="1"/>
+                                    <field name="name" invisible="1" />
+                                    <field name="jo_line_id" invisible="1" force_save="1" />
+                                    <field name="product_id" />
+                                    <field name="required_qty" />
+                                    <field name="qty" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="teckleong_child_jo_creation_wizard" model="ir.actions.act_window">
+        <field name="name">JO Creation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">teckleong.child.jo.creation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_teckleong_child_jo_creation_wizard" />
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -1,0 +1,32 @@
+.quick_search {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+.quick_search .quick_search_form {
+    width: 100%;
+    display: contents;
+}
+.quick_search .form-control {
+    height: auto;
+    padding: 2px;
+}
+.quick_search select.form-control {
+    background-position-x: calc(100% - 10px);
+}
+.quick_search .quick_search_form .quick_search_field {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.quick_search .quick_search_between .col-6:nth-child(1) {
+    padding: 0;
+    padding-left: 15px;
+    padding-right: 5px;
+}
+.quick_search .quick_search_between .col-6:nth-child(2) {
+    padding: 0;
+    padding-left: 5px;
+    padding-right: 15px;
+}

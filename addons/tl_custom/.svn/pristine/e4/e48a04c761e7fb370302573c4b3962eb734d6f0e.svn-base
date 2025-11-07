@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_category_property_form" model="ir.ui.view">
+	    <field name="name">product.category.property.form.inherit.teckleong.custom</field>
+	    <field name="model">product.category</field>
+	    <field name="inherit_id" ref="product.product_category_form_view"/>
+	    <field name="arch" type="xml">
+  	      	<xpath expr="//group[@name='account_property']" position="inside">
+                <group string="Product Dimension">
+	        		<field name="is_have_diameter" />
+	        		<!-- <field name="is_have_height" /> -->
+	        		<field name="is_have_width" />
+	        		<field name="is_have_thickness" />
+	        		<field name="is_have_length" />
+	        		<field name="is_have_kg" />
+
+					<!-- <field name="is_have_outer_diameter" /> -->
+	        		<field name="is_have_across_flat" />
+	        		<!-- <field name="is_have_breadth" /> -->
+	        		<field name="is_have_mesh_number" />
+	        		<field name="is_have_mesh_size" />
+					<field name="is_have_hole_diameter" />
+	        		<!-- <field name="is_have_number" /> -->
+	        		<!-- <field name="is_have_opening_dimension" /> -->
+	        		<!-- <field name="is_have_metric_number" /> -->
+	        		<!-- <field name="is_have_size" /> -->
+	        		<field name="is_have_width_2" />
+	        		<field name="is_have_pitch" />
+	        		<field name="is_have_inner_diameter" />
+	        		<field name="formula" precision="10" />
+        			<field name="density" />
+	        	</group>
+	        </xpath>
+	    </field>
+	</record>
+</odoo>

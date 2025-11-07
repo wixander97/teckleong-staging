@@ -1,0 +1,97 @@
+span{
+	margin: 0;
+}
+
+.job-order-header{
+	width: 100%;
+	display: flex;
+	display: -webkit-box;
+	flex-direction: row;
+	-webkit-box-orient: horizontal;
+	justify-content: space-between;
+	-webkit-box-pack: justify;
+	margin-bottom: 1em;
+}
+
+.job-order-header-left{
+	display: flex;
+	display: -webkit-box;
+	flex-direction: column;
+	-webkit-box-orient: vertical;
+	width: 70%;
+}
+
+.job-order-header-left-logo{
+	display: flex;
+	display: -webkit-box;
+	flex-direction: row;
+	-webkit-box-orient: horizontal;
+	vertical-align: top;
+}
+
+.job-order-header-left-logo-text{
+	display: flex;
+	display: -webkit-box;
+	flex-direction: column;
+	-webkit-box-orient: vertical;
+
+}
+
+.job-order-header-left-logo-text div{
+	margin-bottom: -14px;
+}
+
+.job-order-header-right{
+	display: flex;
+	display: -webkit-box;
+	flex-direction: column;
+	-webkit-box-orient: vertical;
+	text-align: right;
+	width: 30%;
+}
+
+.job-order-header-right-child{
+	font-size: 2.1em; 
+	font-weight: bold; 
+}
+
+.table-head{
+	width: 100%;
+	margin-bottom: 15px;
+}
+
+.table-head thead{
+	font-weight: bold;
+}
+
+.table-head tr{
+	border: 1px solid black;
+}
+
+.table-head td{
+	border: 1px solid black;
+}
+
+.table-product{
+	width: 100%;
+}
+
+.table-product thead{
+	font-weight: bold;
+}
+
+.table-product tr{
+	border: 1px solid black;
+}
+
+.table-product td{
+	border: 1px solid black;
+}
+
+tr{
+	text-align: center;
+}
+
+td{
+	padding: 5px 2px;
+}

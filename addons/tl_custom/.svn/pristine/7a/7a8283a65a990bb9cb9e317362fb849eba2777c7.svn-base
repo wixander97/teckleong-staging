@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="paperformat_tl_custom_sale_order_quotation" model="report.paperformat">
+            <field name="name">Teckleong Sale Order </field>
+            <field name="default" eval="True" />
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">26</field>
+            <field name="margin_bottom">70</field>
+            <field name="margin_left">3</field>
+            <field name="margin_right">3</field>
+            <field name="header_line" eval="False" />
+            <field name="header_spacing">22</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="sale.action_report_saleorder" model="ir.actions.report">
+            <field name="paperformat_id" ref="tl_custom.paperformat_tl_custom_sale_order_quotation"/>
+        </record>
+
+        <template id="sale.report_saleorder_document">
+            <t t-call="web.basic_layout">
+                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
+                <t t-set="forced_vat" t-value="doc.fiscal_position_id.foreign_vat"/> <!-- So that it appears in the footer of the report instead of the company VAT if it's set -->
+                <t t-set="address">
+                    <div t-field="doc.partner_id"
+                        t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
+                    <p t-if="doc.partner_id.vat"><t t-esc="doc.company_id.account_fiscal_country_id.vat_label or 'Tax ID'"/>: <span t-field="doc.partner_id.vat"/></p>
+                </t>
+                <t t-if="doc.partner_shipping_id == doc.partner_invoice_id
+                                    and doc.partner_invoice_id != doc.partner_id
+                                    or doc.partner_shipping_id != doc.partner_invoice_id">
+                    <t t-set="information_block">
+                        <strong t-if="doc.partner_shipping_id == doc.partner_invoice_id">Invoicing and Shipping Address:</strong>
+                        <strong t-if="doc.partner_shipping_id != doc.partner_invoice_id">Invoicing Address:</strong>
+                        <div t-field="doc.partner_invoice_id"
+                        t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        <t t-if="doc.partner_shipping_id != doc.partner_invoice_id">
+                            <strong>Shipping Address:</strong>
+                            <div t-field="doc.partner_shipping_id"
+                                t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </t>
+                    </t>
+                </t>
+
+                <div class="header ">
+                    <link rel="stylesheet" href="/tl_custom/static/css/job_order_report.css" />
+                    <div class="job-order-header">
+                        <div class="job-order-header-left">
+                            <div class="job-order-header-left-logo">
+                                <div style="margin-right: 10px;">
+                                    <img src="/tl_custom/static/img/tl_icon.png" width="100px" />
+                                </div>
+                                <div class="job-order-header-left-logo-text">
+                                    <div style="color: red; letter-spacing: 22px; font-weight: bold; font-size: 1.65em; font-family: Arial Black;">德隆金属私人有限公司</div>
+                                    <div class="d-flex">
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;">TECK</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">LEONG</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">METALS</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">PTE</div>
+                                        <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:8px;">LTD</div>
+                                    </div>
+                                    <div style="font-size: 1.2em;margin-top:13px;">
+                                        <span style="margin-right: 118px;">Tel : +65 6398 0020</span><span>Fax : +65 6398 0050</span>
+                                    </div>
+                                </div>  
+                            </div>
+                        </div>
+                        <div class="job-order-header-right">
+                            <div class="job-order-header-right-child">
+                                <t t-if="doc.state not in ['draft','sent']">SALES ORDER </t>
+                                <t t-if="doc.state in ['draft','sent']">SALES QUOTATION </t>
+                            </div>
+                            <div style="font-size: 0.8em; margin-bottom: 20px;">
+                                <span>Page : </span>
+                                <span class="page" /> of <span class="topage" />
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                   <!--  <div class="d-flex" style="width: 100%;">
+                        <div style="">
+                             <img src="/tl_custom/static/img/logo1.jpeg" style="height:90px"/>
+                             <img src="/tl_custom/static/img/logo.jpeg" style="width: 380px;height:85px"/>
+                             <div class="d-flex mt-2" style="font-size: 20px;margin-left:110px">
+                                <p>Tel: +65 6398 0020</p>
+                                <p style="margin-left:30px">Fax: +65 6398 0050</p>
+                             </div>
+                        </div>
+                        <div style="width:42%;text-align:end;padding-top:25px">
+                            <div>
+                                <h2 class="mt16" style="text-transform:uppercase; font-size: 27px;font-weight: 900;">
+                                    <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
+                                        <span t-if="doc.state not in ['draft','sent']">Sales Order </span>
+                                        <span t-if="doc.state in ['draft','sent']">Sales Quotation </span>
+                                    </t>
+                                    <t t-if="env.context.get('proforma', False) or is_pro_forma">
+                                        <span>Pro-Forma Invoice </span>
+                                    </t>
+                                </h2>
+                            </div>
+                            <div style="margin-top:-10px">
+                                  <span>Page : </span>
+                                  <span class="page"/> of <span class="topage"/>
+                              </div>
+                        </div>
+                    </div> -->
+                    
+                </div>
+
+                <div class="page">
+                    <div class="oe_structure"/>
+
+                    <div class="d-flex" style="width: 100%;">
+                        <div style="width: 50%;">
+                            <p>
+                            <div ><b>Order Address :</b></div>
+                            <div ><t t-esc="doc.partner_id.parent_id.name"/></div>
+                            <div><t t-esc="doc.partner_id.street"/></div>
+                            <div><t t-esc="doc.partner_id.country_id.name"/> <t t-esc="doc.partner_id.zip"/></div>
+                            </p>
+                            <p>
+                            <div>
+                            <span>Attn: <t t-esc="doc.partner_id.name"/></span>
+                            </div>
+                            <div class=" d-flex" style="margin-top:0; padding-top:0;">
+                                <div style="width:50%">Tel: <t t-esc="doc.partner_id.phone"/></div>
+                                <div style="width:50%">Fax: <t t-esc="doc.partner_id.fax"/></div>
+                            </div>
+                            <span>Email: <t t-esc="doc.partner_id.email"/></span>
+                            </p>
+                        </div>
+                        <div style="width: 50%;">
+                            <p>
+                            <div ><b>Delivery Address :</b></div>
+                            <div >
+                                <t t-esc="doc.partner_shipping_id.parent_id.name"/>
+                            </div>
+                            <div><t t-esc="doc.partner_shipping_id.street"/></div>
+                            <div><t t-esc="doc.partner_shipping_id.country_id.name"/> <t t-esc="doc.partner_shipping_id.zip"/></div>
+                            </p>
+                            <p>
+                            <div>
+                            <span>Attn: <t t-esc="doc.partner_shipping_id.name"/></span>
+                            </div>
+                            <div class=" d-flex" style="margin-top:0; padding-top:0;">
+                                <div style="width:50%">Tel: <t t-esc="doc.partner_shipping_id.phone"/></div>
+                                <div style="width:50%">Fax: <t t-esc="doc.partner_shipping_id.fax"/></div>
+                            </div>
+                            <span>Email: <t t-esc="doc.partner_shipping_id.email"/></span>
+                            </p>
+                        </div>
+                    </div>    
+
+                    <h2 class="mt-2" style="text-transform:uppercase;font-size: 20px;"><b>
+                        <t t-if="not (env.context.get('proforma', False) or is_pro_forma)">
+                            <span t-if="doc.state not in ['draft','sent']">Sales Order Number</span>
+                            <span t-if="doc.state in ['draft','sent']">Sales Quotation Number</span>
+                        </t>
+                        <t t-if="env.context.get('proforma', False) or is_pro_forma">
+                            <span>Pro-Forma Invoice</span>
+                        </t> : 
+                        <span t-field="doc.name"/> </b>
+                    </h2>
+
+                    <div class="row mt32 mb32" id="informations" style="visibility: hidden;">
+                        <div t-if="doc.client_order_ref" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Your Reference:</strong>
+                            <p class="m-0" t-field="doc.client_order_ref"/>
+                        </div>
+                        <div t-if="doc.date_order and doc.state not in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Order Date:</strong>
+                            <p class="m-0" t-field="doc.date_order"/>
+                        </div>
+                        <div t-if="doc.date_order and doc.state in ['draft','sent']" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Quotation Date:</strong>
+                            <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                        </div>
+                        <div t-if="doc.validity_date and doc.state in ['draft', 'sent']" class="col-auto col-3 mw-100 mb-2" name="expiration_date">
+                            <strong>Expiration:</strong>
+                            <p class="m-0" t-field="doc.validity_date"/>
+                        </div>
+                        <div t-if="doc.user_id.name" class="col-auto col-3 mw-100 mb-2">
+                            <strong>Salesperson:</strong>
+                            <p class="m-0" t-field="doc.user_id"/>
+                        </div>
+                    </div>
+
+
+                    <table class="table table-bordered table-sm " style="margin-top:-55px" >
+                        <thead>
+                            <tr style="width:100%">
+                            
+                            <th scope="col" class="text-center " style="border: 1px solid #757575;width:18%;"><b>Delivery Order No</b></th>
+                            <th scope="col" class="text-center " style="border: 1px solid #757575;width:17%;"><b>Invoice Ref</b></th>
+                            <th scope="col" class="text-center " style="border: 1px solid #757575;width:10%;"><b>Currency</b></th>
+                            <th scope="col" class="text-center " style="border: 1px solid #757575;width:12%;"><b>Date Order</b></th>
+                          
+                            <th scope="col" class="text-center " style="border: 1px solid #757575;width:16%;"><b>Order By</b></th>
+                            <th scope="col" class="text-center " style="border: 1px solid #757575;width:15%;"><b>Payment Terms</b></th>
+                            <th scope="col" class="text-center " style="border: 1px solid #757575;width:19%;"><b>Overall Disc.</b></th>
+                            
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td class="text-center" style="border: 1px solid #757575;">
+                                <!-- <t t-esc="o.po_ref"/> -->
+                                <t t-set="idso" t-value="request.env['stock.picking']"/>
+                                <t t-set="nani1" t-value="idso.search([('origin', '=',doc.name)],limit=1)"/>     
+                                    <span><t t-esc="nani1.name"/></span>
+                             </td>
+                            <td class="text-center" style="border: 1px solid #757575;">
+                                <!-- <t t-esc="o.po_ref"/> -->
+                                <t t-set="idso1" t-value="request.env['account.move']"/>
+                                <t t-set="nani2" t-value="idso1.search([('invoice_origin', '=',doc.name)],limit=1)"/>     
+                                    <span><t t-esc="nani2.name"/></span>
+                                
+                             </td>
+                            <td class="text-center" style="border: 1px solid #757575;">
+                                <p class="m-0" t-field="doc.pricelist_id.currency_id"/>
+                            </td>
+                            
+                            <td class="text-center" style="border: 1px solid #757575;">
+                                <p class="m-0" t-field="doc.date_order" t-options='{"format": "d/MM/yyyy"}'/>
+                                </td>
+                            <td class="text-center" style="border: 1px solid #757575;">
+                                <t t-esc="doc.partner_id.name"/>
+                                </td>
+                            <td class="text-center" style="border: 1px solid #757575;"> <t t-esc="doc.payment_term_id.name"/> </td>
+                            <td class="text-center" style="border: 1px solid #757575;"> <t t-esc="int(doc.discount_overall)"/> %</td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>    
+                    <!-- Is there a discount on at least one line? -->
+                    <t t-set="display_discount" t-value="any(l.discount for l in doc.order_line)"/>
+                    
+                    <t t-set="listTaxes" t-value="[]"/>
+                    <table class="table table-sm o_main_table">
+                        <!-- In case we want to repeat the header, remove "display: table-row-group" -->
+                        <thead style="display: table-row-group">
+                            <tr style="border: 1px solid #757575;">
+                                <th name="th_description" style="border: 1px solid #757575;" class="text-center"><span><b>Description</b></span></th>
+                                <th name="th_product_category" style="border: 1px solid #757575;" class="text-center"><span><b>Product Category</b></span></th>
+                                <th name="th_quantity" style="border: 1px solid #757575;" class="text-center"><span><b>Quantity</b></span></th>
+                                <th name="th_priceunit" style="border: 1px solid #757575;" class="text-center"><span><b>Unit Price</b></span></th>
+                                <th name="th_discount" t-if="display_discount" groups="product.group_discount_per_so_line" style="border: 1px solid #757575;" class="text-center">
+                                    <span>Disc.%</span>
+                                </th>
+                                <!-- <th name="th_taxes" style="border: 1px solid #757575;" class="text-center"><span><b>Taxes</b></span></th> -->
+                                <th name="th_subtotal" style="border: 1px solid #757575;" class="text-center">
+                                    <span groups="account.group_show_line_subtotals_tax_excluded"><span><b>Amount</b></span></span>
+                                    <span groups="account.group_show_line_subtotals_tax_included"><span><b>Total Price</b></span></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="sale_tbody" style="font-size:13px">
+
+                            <t t-set="current_subtotal" t-value="0"/>
+                            <t t-set="co" t-value="0"/>
+
+                            <t t-foreach="doc.order_line" t-as="line">
+                                <t t-set="co" t-value="co+1"/>
+                                <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
+                                <t t-set="current_subtotal" t-value="current_subtotal + line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
+
+                                <tr style="border: 1px solid #757575;" t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                    <t t-if="not line.display_type">
+                                        <td style="border: 1px solid #757575;" class="text-left" name="td_name"><span t-field="line.name"/></td>
+                                        <td style="border: 1px solid #757575;width:18%;" class="text-center" name="td_product_category"><span t-field="line.product_id.categ_id.name"/></td>
+                                        <td style="border: 1px solid #757575;" name="td_quantity" class="text-center">
+                                            <span t-field="line.product_uom_qty"/>
+                                            <span t-field="line.product_uom"/>
+                                        </td>
+                                        <td style="border: 1px solid #757575;" name="td_priceunit" class="text-center">
+                                            <span t-field="line.price_unit" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                        </td>
+                                        <td style="border: 1px solid #757575;"  t-if="display_discount" groups="product.group_discount_per_so_line"  class="text-center" >
+                                            <span t-esc="int(line.discount) " />%                                             
+                                        </td>
+                                        <!-- <td style="border: 1px solid #757575;" name="td_taxes" class="text-center">
+                                            <span t-esc="' '.join(map(lambda x: (x.description or x.name), line.tax_id))"/>
+                                            
+                                        </td> -->
+                                             
+                                               
+                                              
+                                            
+                                        
+                                        <td style="border: 1px solid #757575;" name="td_subtotal" class="text-center o_price_total">
+                                            <span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.currency_id}' groups="account.group_show_line_subtotals_tax_excluded"/>
+                                            <span t-field="line.price_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}' groups="account.group_show_line_subtotals_tax_included"/>
+                                        </td>
+                                        
+                                    </t>
+                                    <t t-if="line.display_type == 'line_section'">
+                                        <td name="td_section_line" class="text-center" colspan="99">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <t t-set="current_section" t-value="line"/>
+                                        <t t-set="current_subtotal" t-value="0"/>
+                                    </t>
+                                    <t t-if="line.display_type == 'line_note'" class="text-center">
+                                        <td name="td_note_line" colspan="99">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                    </t>
+                                </tr>
+
+                                <t t-if="current_section and (line_last or doc.order_line[line_index+1].display_type == 'line_section')">
+                                    <tr class="is-subtotal text-right">
+                                        <td name="td_section_subtotal" colspan="99">
+                                            <strong class="mr16">Subtotal</strong>
+                                            <span
+                                                t-esc="current_subtotal"
+                                                t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'
+                                            />
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <!-- <t t-esc="listTaxes"/> -->
+                    <!-- <t t-set="datas" t-value="dict((i, listTaxes.count(i)) for i in listTaxes)"/>
+                    <t t-esc="datas"/> -->
+                    
+                    <!-- <t t-set="lTaxes1" t-value="[]"/> -->
+                    
+                   
+                     
+                    <div class="clearfix" name="so_total_summary">
+                        <div id="total" class="row" name="total">
+                            <div t-attf-class="#{'col-4' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
+                                <table class="table table-sm">
+                                    <!-- Tax totals -->
+                                    <t t-set="tax_totals" t-value="json.loads(doc.tax_totals_json)"/>
+                                    <t t-call="account.document_tax_totals"/>
+                                </table>
+                                <!-- t-if="doc.state not in ['draft','sent']" -->
+                                <!-- <div class=" text-right">
+                                    <p class=" p-0" style="margin-right:16px;margin-bottom:-4px"><b>Paynow QR Code</b></p>
+                                    <img class=""  src="/tl_custom/static/img/barcode.jpeg" style="width: 200px;height:185px;margin-right:-20px"/>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div t-if="doc.signature" class="mt32 ml64 mr4" name="signature" style="visibility: hidden;">
+                        <div class="offset-8">
+                            <strong>Signature</strong>
+                        </div>
+                        <div class="offset-8">
+                            <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                        </div>
+                        <div class="offset-8 text-center">
+                            <p t-field="doc.signed_by"/>
+                        </div>
+                    </div>
+
+                    <div class="oe_structure" style="visibility: hidden;" />
+
+                    <!-- <p t-field="doc.note" style="visibility: hidden;"/> -->
+
+                    <!-- <div class="hide_lastpage " style="page-break-before: always;margin-left:20px;font-size: 18px;">
+                        <p>Teck Leong Metals Pte Ltd Bank Details:</p>
+                        <ul class="m-0 p-0" style="list-style-type: none">
+                            <li>Account Name: TECK LEONG METALS PTE LTD</li>
+                            <li>Development Bank of Singapore (DBS)</li>
+                            <li>Current Account: 011-9002808</li>
+                            <li>SWIFT Code / BIC DBSSSGSG</li>
+                            <li>Bank / Institution DBS BANK LTD.</li>
+                            <li>Branch Name</li> 
+                            <li>Address DBS ASIA CENTRAL MBFC TOWER 3, 12 MARINA BOULEVARD</li>
+                            <li>City SINGAPORE</li>
+                            <li>Postcode 018982</li>
+                            <li>Country Singapore</li>
+                        </ul>
+
+                        <p>You can use paynow via DBS app:</p>
+                        <p>Just use the following UEN to search for  &#160; <b>TECK LEONG METALS PTE LTD</b></p>
+                        <img src="/tl_custom/static/img/Date.png" style="height:90px"/><br/>
+                       
+                        <span><b>Please select FAST instead of GIRO if you need it urgently</b></span>
+                        <p>GIRO will takes 2-3 business day and delivery can only arrange after we received the payment (NOT on the day after you transfer)</p>
+                        <span><b>Please indicate invoice number in your reference.</b></span>
+                    </div> -->
+                    <!-- <p t-if="not is_html_empty(doc.payment_term_id.note)" style="visibility: hidden;">
+                        <span t-field="doc.payment_term_id.note"/>
+                    </p> -->
+                    <!-- <p id="fiscal_position_remark" t-if="doc.fiscal_position_id and not is_html_empty(doc.fiscal_position_id.sudo().note)" style="visibility: hidden;">
+                        <strong>Fiscal Position Remark:</strong>
+                        <span t-field="doc.fiscal_position_id.sudo().note"/>
+                    </p> -->
+                </div>
+
+                <div class=" footer" style="width: 100%; align-item: center;  ">
+                        <!--
+                            signature 
+                            <div class=" d-flex hide_lastpage"  t-attf-style="width:100%;page-break-inside: avoid !important;">
+                            <div class="" style="width:50%; ">
+                                <span style="font-size:12px"><b>Remarks:</b></span>
+                                <div class="pt-3">
+                                    <span>Accepted by:</span>
+                                
+                                    <div style="margin-top:101px">
+                                    <hr class="border-black" style="margin:0px;width:300px;height: 1px;background-color:black"/>
+                                    <span>Khim Seah Enterprise Pte Ltd</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="width:50%;position: relative">
+                            
+                                <div class="pt-4">
+                                    <span></span>
+                                
+                                    <div style="position: absolute; bottom: 0;right:0">
+                                    <hr class="border-black" style="margin:0px;width:300px;height: 1px;background-color:black"/>
+                                    <span>Khim Seah Enterprise Pte Ltd</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> -->
+
+                        <t t-call="tl_custom.cs_footer_barcode"/>
+                        <t t-call="tl_custom.cs_footer_custom"/>
+                          
+                          
+                </div>
+            </t>
+        </template>
+
+        <template id="cs_footer_custom">
+                          
+                          <!-- <p class="m-0 p-0 hide_lastpage"><B>THIS IS A COMPUTER GENERATED DOCUMENT NO SIGNATURE IS REQUIRED</B></p> -->
+                          <div class="d-flex">
+                                <div  style="width: 40%;font-size:14px;padding-top:10px">
+                                    <span> E &#38; O.E</span><br/>
+                                    <span> TLM terms and conditions of sale apply.</span>
+                                </div>
+                                <div  style="width: 60%;text-align:end;">
+                                    <span style="font-size:20px"><b>Teck Leong Metals Pte Ltd</b></span><br/>
+                                    <span>7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</span>
+                                </div>
+                          </div>
+                          <hr class="border-black" style="margin:0px;width:100%;height: 1px;background-color:black"/>
+                          <div class="d-flex" style="margin-top:0px;">
+                                <div class="mt-1"  style="width: 38%; ">
+                                    
+                                    <img src="/tl_custom/static/img/ftlog.png" style="height:90px;"/><br/>
+                                    <span  style="margin-left:1px;font-size:12px;">CERT NO: SNG 01603965</span>
+                                    
+                                </div>
+                                <div   style="width: 62%;text-align:end;">
+                                    <p class="m-0 p-0 hide_lastpage"><B>THIS IS A COMPUTER GENERATED DOCUMENT NO SIGNATURE IS REQUIRED</B></p>
+                                    <!-- <span>7030 Ang Mo Kio Ave 5 #B1-03/04 Northstar@AMK Singapore 569880</span><br/>
+                                    <span>69Q Tuas South Avenue 1 Seatown Industrial Centre Singapore 637495</span><br/>
+                                    <span>28 Kelantan Road #01-127 Singapore 200028</span><br/>
+                                    -->
+                                    <span>www.teckleongmetals.com  |  sales@teckleongmetals.com</span><br/>
+                                    <span  style="font-size:13px;letter-spacing: 2px;padding-left:-15px">CR: 74371000000R</span>
+                                    <span class="mr-1 ml-1" style="font-size:13px">|</span>
+                                    <span style="font-size:13px;letter-spacing: 2px;">CO REG NO: 200004371G</span>
+                                    <span class="mr-1 ml-1" style="font-size:13px">|</span>
+                                    <span style="font-size:13px;letter-spacing: 2px;">GST REG NO: 200004371G</span> 
+                                    <!-- <span style="font-size:13px"> <span>>CR: 74371000000R | </span CO REG NO: 200004371G | CO REG NO: 200004371G</span> -->
+                                    <!-- <span  > -->
+                                       <!-- <div class="border" style="width:23%;letter-spacing: 2px; "> <span>CR: 74371000000R</span> </div>
+                                       <div class="border" style="width:5%;"> <span>|</span> </div>
+                                       <div class="border" style="width:36%;letter-spacing: 2px; "> <span>CO REG NO: 200004371G</span></div>
+                                       <div class="border" style="width:5%;"> <span>|</span> </div>
+                                       <div class="border" style="width:35%;letter-spacing: 2px; "> <span>CO REG NO: 200004371G</span></div> -->
+                                       <!-- <ul class="d-flex border p-0" style="list-style-type: none;text-align:right;">
+                                           <li style="margin"><span>CR:</span></li>
+                                           <li><span>74371000000R</span></li>
+                                           <li><span>|</span></li>
+                                           <li><span>CO REG NO: </span></li>
+                                           <li><span>200004371G</span></li>
+                                           <li><span>|</span></li>
+                                           <li><span>CO REG NO: </span></li>
+                                           <li><span>200004371G</span></li>
+                                       </ul>     -->
+                                    <!-- </span><br/> -->
+                                </div>
+                          </div>
+        </template>
+        
+        <template id="cs_footer_barcode" name="template_name">
+            <div class=" d-flex hide_lastpage" style="width:100%;margin-left:-26px">
+                                <span style="color:white;">p</span>
+                                <img src="/tl_custom/static/img/barcode.jpeg" style="width: 190px;height:155px;opacity: 1.0;"/>
+    
+                                    <ul class="m-0 p-2" style="list-style-type: none;width:100%;font-size:18px;">
+                                        <li>Account Name: TECK LEONG METALS PTE LTD</li>
+                                        <li>Development Bank of Singapore (DBS)</li>
+                                        <li>Current Account: 011-9002808</li>
+                                        <li>SWIFT Code / BIC DBSSSGSG</li>
+                                        <li>Paynow UEN: 200004371G</li>                                       
+                                    </ul>
+                                
+                          </div>  
+        </template>
+    </data>
+</odoo>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="quick_search_operator_ilike" model="quick.search.operator">
+            <field name="name">contains</field>
+            <field name="value">ilike</field>
+        </record>
+        <record id="quick_search_operator_not_ilike" model="quick.search.operator">
+            <field name="name">doesn't contain</field>
+            <field name="value">not ilike</field>
+        </record>
+        <record id="quick_search_operator_equal" model="quick.search.operator">
+            <field name="name">is equal to</field>
+            <field name="value">=</field>
+        </record>
+        <record id="quick_search_operator_not_equal" model="quick.search.operator">
+            <field name="name">is not equal to</field>
+            <field name="value">!=</field>
+        </record>
+        <record id="quick_search_operator_greater" model="quick.search.operator">
+            <field name="name">greater than</field>
+            <field name="value">&gt;</field>
+        </record>
+        <record id="quick_search_operator_less" model="quick.search.operator">
+            <field name="name">less than</field>
+            <field name="value">&lt;</field>
+        </record>
+        <record id="quick_search_operator_greater_equal" model="quick.search.operator">
+            <field name="name">greater than or equal to</field>
+            <field name="value">&gt;=</field>
+        </record>
+        <record id="quick_search_operator_less_equal" model="quick.search.operator">
+            <field name="name">less than or equal to</field>
+            <field name="value">&lt;=</field>
+        </record>
+        <record id="quick_search_operator_between" model="quick.search.operator">
+            <field name="name">is between</field>
+            <field name="value">between</field>
+        </record>
+	</data>
+</odoo>

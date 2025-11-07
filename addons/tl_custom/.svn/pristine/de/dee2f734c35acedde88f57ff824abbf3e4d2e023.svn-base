@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+import json
+import time
+from ast import literal_eval
+from datetime import date, timedelta
+from itertools import groupby
+from operator import attrgetter, itemgetter
+from collections import defaultdict
+
+from odoo import SUPERUSER_ID, _, api, fields, models
+from odoo.addons.stock.models.stock_move import PROCUREMENT_PRIORITIES
+from odoo.exceptions import UserError
+from odoo.osv import expression
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, format_datetime
+from odoo.tools.float_utils import float_compare, float_is_zero, float_round
+from odoo.tools.misc import format_date
+from odoo.exceptions import UserError, ValidationError, AccessError
+
+class Picking(models.Model):
+    _inherit = "stock.picking"
+
+    @api.model
+    def create(self, vals):
+        if vals.get('sale_order_id'):
+             sale = self.env['sale.order'].browse(vals['sale_order_id'])
+
+             if sale.self_collection_location:
+                vals['teckleong_stock_type'] = 'self_collection'
+
+        res = super(Picking, self).create(vals)
+
+        return res
+
+    def button_validate(self):
+        res = super(Picking, self).button_validate()
+
+        if self.origin:
+            sales = self.env['sale.order'].search([('name', '=', self.origin)])
+
+            if sales:
+                job_order = self.env['job.order'].search([('sale_order_id', '=', sales.id), ('state', '!=', 'cancel')])
+
+                if job_order:
+                    for job in job_order:
+                        if job.state != 'done':
+                            raise ValidationError("There is still Job Order that are not Done yet.")
+
+        return res
+
+    def _compute_sale_order_id(self):
+        for picking in self:
+            sale_order_id = False
+
+            if picking.origin:
+                sale_order_id = self.env['sale.order'].search([('name', '=', picking.origin)])
+
+            picking.sale_order_id = sale_order_id
+
+    @api.onchange('teckleong_stock_type')
+    def onchange_teckleong_stock_type(self):
+        self.self_collection_location = False
+
+    teckleong_stock_type = fields.Selection([
+        ('self_collection', 'Self Collection'),
+        ('delivery', 'Delivery'),
+    ], string='Stock Type', default='delivery')
+
+    po_ref = fields.Char('PO Ref')
+    customer_ref = fields.Char('Customer Ref')
+    sale_order_id = fields.Many2one('sale.order', string='Sale', compute='_compute_sale_order_id')
+    self_collection_location = fields.Selection([
+        ('amk','AMK'),
+        ( 'kel', 'KEL'),
+        ('tuas', 'TUAS'),
+    ],string='Self Collection Location', related='sale_order_id.self_collection_location', readonly=False)

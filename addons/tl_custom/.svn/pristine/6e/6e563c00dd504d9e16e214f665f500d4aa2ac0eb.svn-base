@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_purchase_order_form" model="ir.ui.view">
+	    <field name="name">purchase.order.form.inherit.teckleong.custom</field>
+	    <field name="model">purchase.order</field>
+	    <field name="inherit_id" ref="purchase.purchase_order_form"/>
+	    <field name="arch" type="xml">
+  	      	<xpath expr="//field[@name='incoterm_id']" position="after">
+  	      		<field name="sale_order_id" invisible="1" />
+  	      	</xpath>
+
+  	      	<xpath expr="//field[@name='order_line']/tree//field[@name='name']" position="after">
+	      		<field name="electrode_number" />
+	      		<field name="batch_number" />
+	      	</xpath>
+	      	<xpath expr="//field[@name='partner_ref']" position="after">
+	      		<field name="shipping_term" />
+	      		<field name="partner_parent_id" invisible="1" />
+	      		<field name="self_collection_id" attrs="{'invisible': [('shipping_term', '!=', 'self_collection')]}" domain="['|', ('id', 'child_of', partner_parent_id),('id', 'child_of', partner_id)]" />
+	      	</xpath>
+	    </field>
+	</record>
+</odoo>

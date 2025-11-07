@@ -1,0 +1,45 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+import logging
+import re
+
+from odoo import api, fields, models, tools, _
+from odoo.exceptions import UserError, ValidationError
+from odoo.osv import expression
+
+
+from odoo.tools import float_compare, float_round
+
+_logger = logging.getLogger(__name__)
+
+
+
+class ProductCategory(models.Model):
+    _inherit = "product.category"
+
+    is_have_diameter = fields.Boolean('Diameter(OD)')
+    # is_have_height = fields.Boolean('Height')
+    is_have_width = fields.Boolean('Width')
+    is_have_thickness = fields.Boolean('Thickness')
+    is_have_length = fields.Boolean('Length')
+    is_have_kg = fields.Boolean('Kg')
+    # is_have_outer_diameter = fields.Boolean('Outer Diameter')
+    is_have_across_flat = fields.Boolean('Across Flat')
+    # is_have_breadth = fields.Boolean('Breadth')
+    is_have_mesh_number = fields.Boolean('Mesh Number')
+    is_have_mesh_size = fields.Boolean('Mesh Size')
+    is_have_hole_diameter = fields.Boolean('Hole Diameter')
+    # is_have_number = fields.Boolean('Number')
+    # is_have_opening_dimension = fields.Boolean('Opening Dimension')
+    # is_have_metric_number = fields.Boolean('Metric Number')
+    # is_have_size = fields.Boolean('Size')
+    is_have_width_2 = fields.Boolean('Width 2')
+    is_have_pitch = fields.Boolean('Pitch')
+
+    density = fields.Float('Density', digits=(12,8))
+    formula = fields.Selection([
+        ('formula_1', 'T x (W + W2) x L x Density'),
+        ('formula_2', 'T x W x L x Density'),
+        ('formula_3', 'π x (OD x 0.5) x (OD x 0.5) x L x Density'),
+    ], string='Formula')

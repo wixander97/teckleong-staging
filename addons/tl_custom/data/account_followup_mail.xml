@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="demo_followup_line1" model="account_followup.followup.line" forcecreate="False">
+            <field name="name">First reminder email</field>
+            <field name="delay">15</field>
+            <field name="company_id" ref="base.main_company" />
+            <field name="send_email">True</field>
+            <field name="description">
+                Dear %(partner_name)s,
+                I trust this email finds you well. We appreciate your business with Teck Leong Metals Pte Ltd.
+
+                Upon reviewing our records, it has come to our attention that an outstanding payment of %(amount_due)s remains unpaid on your account. We kindly request your prompt attention to settle this amount within the next 8 days.
+
+                Please ensure that the payment is processed to avoid any potential disruptions to your account or services. If the payment has already been made, we sincerely apologize for any inconvenience, and you may disregard this reminder.
+
+                For your convenience, the payment details are as follows:
+
+            </field>
+        </record>
+    </data>
+</odoo>

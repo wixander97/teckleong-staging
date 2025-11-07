@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_job_order,job.order,model_job_order,,1,1,1,1
+access_job_order_line,job.order.line,model_job_order_line,,1,1,1,1
+access_sale_order_custom_dimension_line,sale.order.custom.dimension.line,model_sale_order_custom_dimension_line,,1,1,1,1
+access_teckleong_purchase_creation_line_wizard,teckleong.purchase.creation.line.wizard,model_teckleong_purchase_creation_line_wizard,,1,1,1,1
+access_job_order_cutting,job.order.cutting,model_job_order_cutting,,1,1,1,1
+access_job_order_cutting_line,job.order.cutting.line,model_job_order_cutting_line,,1,1,1,1
+access_job_order_cutting_balance,job.order.cutting.balance,model_job_order_cutting_balance,,1,1,1,1
+
+access_teckleong_purchase_creation_wizard,teckleong.purchase.creation.wizard,model_teckleong_purchase_creation_wizard,,1,1,1,1
+access_teckleong_notification_wizard,teckleong.notification.wizard,model_teckleong_notification_wizard,,1,1,1,1

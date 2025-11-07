@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="mail_template_data_tl_quotation_expiration" model="mail.template">
+            <field name="name">TL Quotation Expiration</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">Quotation Expiry Reminder</field>
+            <field name="email_from">sales@tl.sg</field>
+            <!-- <field name="email_to">aaa</field> -->
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="width: 625px;">
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">
+                    Dear Client,</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Thank you for
+                    giving us an opportunity to assist you.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Our quotation
+                    <t t-out="object.name or ''" /> amounting to S$<t t-out="object.substitute_total or ''" /> is ready for your kind review. 
+                    </p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Please feel free
+                    to contact us if you have further questions.</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Hope
+                    to hear from you soon!</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Best
+                    Regards</p>
+                    <p class="font-weight-bold" style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><span style="font-weight: bold !important;">Teck Leong Metals Pte Ltd</span><br style="box-sizing:border-box;" />
+                    Tel:
+                    +65 6398 0020 Fax: +65 6398 0050<br style="box-sizing:border-box;" />
+                    WhatsApp: +65 9638
+                    0020</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Head
+                    Office: 7030 Ang Mo Kio Ave 5 #01-16 Northstar@AMK Singapore 569880</p>
+                    <p style="margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Website:
+                    <a href="http://www.teckleongmetals.com/" style="text-decoration:none;box-sizing:border-box;background-color:transparent;color: #01666b;">www.teckleongmetals.com</a></p>
+                    <img src="/tl_custom/static/img/tl_email_img.png"  />
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                    <p style="text-align: justify; margin:0px;box-sizing:border-box;font-size:12px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;">Confidentiality
+                    caution and disclaimer: This message, together with any attachment,
+                    is intended only for the use of the individual or entity to which it
+                    is addressed, and may contain information that is legally privileged
+                    and confidential. If you are not the intended recipient,
+                    please be informed that any dissemination, distribution or copying of
+                    any part of this message, or any part of any of its attachments (if
+                    any) is strictly prohibited. Kindly note that email
+                    communications are not secured, and therefore are susceptible
+                    to alteration. Teck Leong Metals Pte Ltd will not accept legal
+                    responsibility for the contents of this message.</p>
+
+                    <p style="margin:0px;box-sizing:border-box;font-size:13px;font-family:&quot;Lucida Grande&quot;, Helvetica, Verdana, Arial, sans-serif;"><br style="box-sizing:border-box;" /></p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

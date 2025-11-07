@@ -1,0 +1,57 @@
+<div class="oe_styling_v8">
+    <section class="oe_container" style="font-family: 'Roboto';">
+        <h1 class="oe_slogan" style="font-weight: bold; text-align: center; font-size: 40px;">ADVANCE SEARCH & QUICK SEARCH</h1>
+        <p style="font-size: 16px; text-align: justify;">From version to version, Odoo allow users to advanced search the fields by clicking the dropdown button in the header, and choosing the field along with operator & value we wish to search inside. Such method will make users takes some time and is not convenient. With the help of Advance Search & Quick Search module, users will never again encounter this kind of problem.</p>
+        <p style="font-size: 16px; text-align: justify;">Advance Search & Quick Search allows admin to configure which fields are often search by users, and configure the most used operator from the backend side. After the configuration is done, the search features will show up above the list view and users can easily filter the datas by inputing on the columns that we have provided.</p>
+    </section>
+
+    <section class="oe_container" style="font-family: 'Roboto';">
+        <div class="bg-light" style="background: #F0F0F0; border-radius: 5px; padding: 20px 15px;">
+            <h2 class="text-center mb16" style="font-size: 28px;"><div class="bg-dark" style="background: #06444a; padding: 10px 15px; border-radius: 10px; color: #FFFFFF; display: inline-block;">FEATURES</div></h2>
+            <div class="mt16 mb16 bg-white" style="background: #FFFFFF; border-radius: 15px; padding: 20px;">
+                <ul style="font-size: 16px;">
+                    <li style="list-style-type: square;">Custom configure models with fields that users wish to show up the advance search features</li>
+                    <li style="list-style-type: square;">Save time on custom filtering datas in list view</li>
+                    <li style="list-style-type: square;">Improve works efficiency caused by searching records</li>
+                    <li style="list-style-type: square;">Support date selection widget</li>
+                    <li style="list-style-type: square;">Support all operators that exist in default advance search</li>
+                    <li style="list-style-type: square;">Search multiple columns with a single submission</li>
+                    <li style="list-style-type: square;">Simple and neat design</li>
+                </ul>
+            </div>
+
+            <h2 class="text-center mb16" style="font-size: 28px;"><div class="bg-dark" style="background: #06444a; padding: 10px 15px; border-radius: 10px; color: #FFFFFF; display: inline-block;">SCREENSHOTS</div></h2>
+            <div class="mb16">
+                <p style="font-size: 16px; text-align: justify; font-weight: bold;">Set access rights from user menu.</p>
+                <img src="1.png" alt="Advance Search & Quick Search Odoo 1" style="max-width: 100%; border: 1px solid #D0D0D0; border-radius: 10px;"/>
+            </div>
+            <div class="mb16">
+                <p style="font-size: 16px; text-align: justify; font-weight: bold;">Set model and search columns from Settings -> General Settings-> Quick Search.</p>
+                <img src="2.png" alt="Advance Search & Quick Search Odoo 2" style="max-width: 100%; border: 1px solid #D0D0D0; border-radius: 10px;"/>
+            </div>
+            <div class="mb16">
+                <p style="font-size: 16px; text-align: justify; font-weight: bold;">Access the model that has been configured and the search feature will show up.</p>
+                <img src="3.png" alt="Advance Search & Quick Search Odoo 3" style="max-width: 100%; border: 1px solid #D0D0D0; border-radius: 10px;"/>
+            </div>
+
+            <h2 class="text-center mb16" style="font-size: 28px;"><div class="bg-dark" style="background: #06444a; padding: 10px 15px; border-radius: 10px; color: #FFFFFF; display: inline-block;">YOUTUBE</div></h2>
+            <div class="mb16"><a href="https://www.youtube.com/watch?v=jQqJeQ-plS8" target="_blank"><img src="youtube.png" alt="Advance Search & Quick Search Youtube" style="max-width: 100%; border: 1px solid #D0D0D0; border-radius: 10px;"/></a></div>
+
+            <h2 class="text-center mb16" style="font-size: 28px;"><div class="bg-dark" style="background: #06444a; padding: 10px 15px; border-radius: 10px; color: #FFFFFF; display: inline-block;">FAQS</div></h2>
+            <div class="mt16 mb16 bg-white" style="background: #FFFFFF; border-radius: 15px; padding: 20px;">
+                <ul style="font-size: 16px;">
+                    <li style="list-style-type: square;">What Odoo version does the module support?<br/>This module support from V10 to V15</li>
+                    <li style="list-style-type: square;">Is it suitable for both Community and Enterprise versions?<br/>The module is friendly programmed on both Community & Enterprise version</li>
+                    <li style="list-style-type: square;">What if I purchased the module and it is not working?<br/>Don't worry, you are free to contact us if you encounter any problems with the module, we will get back to you ASAP</li>
+                    <li style="list-style-type: square;">Is it free bugs support?<br/>Yes, give us the details and we will fix it for you</li>
+                </ul>
+            </div>
+
+            <h2 class="text-center mb16" style="font-size: 28px;"><div class="bg-dark" style="background: #06444a; padding: 10px 15px; border-radius: 10px; color: #FFFFFF; display: inline-block;">CONTACT US</div></h2>
+            <div class="mt16 mb16 bg-white" style="background: #FFFFFF; border-radius: 15px; padding: 20px;">
+                <p style="font-size: 16px;">Contact us about anything related to the module, We'll do our best to get back to you as soon as possible.</p>
+                <a href="mailto:ivan.yangkaivan@gmail.com"><div class="bg-dark" style="display: inline-block; font-size: 16px; color: #FFFFFF; background: #06444a; padding: 10px 15px; border-radius: 5px;">ivan.yangkaivan@gmail.com</div></a>
+            </div>
+        </div>
+    </section>
+</div>

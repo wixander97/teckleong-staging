@@ -1,0 +1,143 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError, ValidationError, AccessError
+
+
+class TeckleongPurchaseCreationWizard(models.TransientModel):
+    _name = 'teckleong.purchase.creation.wizard'
+    _description = 'Purchase Creation Wizard'
+
+    @api.model
+    def default_get(self, fields):
+        res = super(TeckleongPurchaseCreationWizard, self).default_get(fields)
+        sale_obj = self.env['sale.order'].browse(self._context.get('active_ids'))
+
+        res['sale_id'] = sale_obj
+        res['line_ids'] = []
+
+        for line in sale_obj.custom_dimension_line_ids:
+            res['line_ids'].append((0, 0, {
+                'product_id': line.parent_product_id.id,
+                'quantity': line.quantity,
+                'diameter': line.diameter,
+                'height': line.height,
+                'width': line.width,
+                'thickness': line.thickness,
+                'length': line.length,
+                'dimension_uom_id': line.dimension_uom_id.id,
+                'product_uom_id': line.product_uom_id.id,
+            }))
+
+        return res
+
+    def action_confirm(self):
+        purchase_obj = self.env['purchase.order']
+        order_line = []
+
+        for line in self.line_ids:
+            if line.product_id and line.quantity > 0:
+                product = line.product_id
+
+                if self.purchase_type == 'third_party':
+                    child_roduct = self.env['product.product'].search([
+                        ('parent_product_id', '=', line.product_id.id ),
+                        ('diameter', '=', line.diameter ),
+                        ('height', '=', line.height ),
+                        ('width', '=', line.width ),
+                        ('thickness', '=', line.thickness ),
+                        ('length', '=', line.length ),
+                    ], limit= 1)
+
+                    if child_roduct:
+                        product = child_roduct
+                    else:
+                        product_name = line.product_id.name + '-'
+
+                        if line.product_id.width != line.width:
+                            width_code = str(int(line.width))
+
+                            while len(width_code) != 4:
+                                width_code = '0' + width_code
+
+                            product_name = product_name + width_code
+
+                        if line.product_id.length != line.length:
+                            length_code = str(int(line.length))
+
+                            while len(length_code) != 4:
+                                length_code = '0' + length_code
+
+                            product_name = product_name + length_code
+
+                        product = self.env['product.product'].create({
+                            'name': product_name,
+                            'diameter': line.diameter,
+                            'height': line.height,
+                            'width': line.width,
+                            'thickness': line.thickness,
+                            'length': line.length,
+                            'dimension_uom_id': line.dimension_uom_id.id,
+                            'parent_product_id': line.product_id.id,
+                            'uom_id': line.product_uom_id.id,
+                            'uom_po_id': line.product_uom_id.id,
+                            'detailed_type': 'product',
+                            'tracking': 'lot',
+                            'categ_id': line.product_id.categ_id.id,
+                        })
+
+                order_line.append((0, 0, {
+                    'name': product.name,
+                    'product_id': product.id,
+                    'product_qty': line.quantity,
+                }))
+
+        purchase = purchase_obj.create({
+            'order_line': order_line,
+            'partner_id': self.partner_id.id,
+        })
+
+        return {
+            'name': _('Purchase'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'purchase.order',
+            'res_id': purchase.id,
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'current',
+        }
+
+
+
+
+
+    name = fields.Char('Reference')
+    partner_id = fields.Many2one('res.partner', string='Vendor')
+    purchase_type = fields.Selection([
+        ('parent_sku', 'Parent SKU'),
+        ('third_party', 'Third Party'),
+    ], string='Purchase Type', default='parent_sku')
+    line_ids = fields.One2many('teckleong.purchase.creation.line.wizard', 'parent_id', string='Lines')
+
+    sale_id = fields.Many2one('sale.order', string='Sale')
+    company_id = fields.Many2one('res.company', string='Company', related='sale_id.company_id')
+
+class TeckleongPurchaseCreationLineWizard(models.TransientModel):
+    _name = 'teckleong.purchase.creation.line.wizard'
+    _description = 'Purchase Creation Line Wizard'
+
+    name = fields.Char('Reference')
+    product_id = fields.Many2one('product.product', string='Product')
+    quantity = fields.Float('Quantity')
+    width = fields.Float('Width')
+    length = fields.Float('Length')
+    height = fields.Float('Height')
+    diameter = fields.Float('Diameter')
+    thickness = fields.Float('Thickness')
+    dimension_uom_id = fields.Many2one('uom.uom', string='Dimension UoM')
+    product_uom_id = fields.Many2one('uom.uom', string='UoM')
+
+    parent_id = fields.Many2one('teckleong.purchase.creation.wizard', string='Parent')

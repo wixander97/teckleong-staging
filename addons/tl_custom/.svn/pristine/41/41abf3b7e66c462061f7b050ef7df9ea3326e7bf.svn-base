@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+        <record id="tl_quotation_email_notify" model="ir.cron">
+            <field name="name">TL Quotation Email Notify</field>
+            <field name="model_id" ref="sale.model_sale_order" />
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="state">code</field>
+            <field name="active">True</field>
+            <field name="code">model.find_expired_quotation()</field>
+        </record>
+    </data>
+</odoo>

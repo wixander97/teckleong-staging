@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="QuickSearchCustomize">
+        <div class="quick_search ui-toolbar" t-att-data-model="model">
+            <form class="quick_search_form">
+                <t t-set="count" t-value="0"/>
+                <t t-foreach="fields" t-as="field">
+                    <t t-set="count" t-value="count + 1"/>
+                    <div t-attf-class="quick_search_field #{(field.field_type == 'date' or field.field_type == 'datetime' and field.operator_value == 'between') and 'col-3' or 'col'}#{count > 5 and ' pt-0' or ''}">
+                        <h5 t-esc="field.name"/>
+                        <t t-if="field.field_type == 'boolean'">
+                            <select class="form-control quick_search_boolean" t-att-data-name="field.field_name" t-att-data-field-type="field.field_type">
+                                <option value="">-</option>
+                                <option value="=">True</option>
+                                <option value="!=">False</option>
+                            </select>
+                        </t>
+                        <t t-if="field.field_type == 'selection'">
+                            <select class="form-control quick_search_selection" t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]">
+                                <option value=""><t t-esc="field.operator_id[1]"/>...</option>
+                                <t t-foreach="field.selection" t-as="option">
+                                    <option t-att-value="option[0]"><t t-esc="option[1]"/></option>
+                                </t>
+                            </select>
+                        </t>
+                        <t t-if="field.field_type == 'date'">
+                            <t t-if="field.operator_value == 'between'">
+                                <div class="row quick_search_between">
+                                    <div class="col-6">
+                                        <div class="input-group date quick_search_date" t-att-id="'quick_search_datepicker_from' + count" data-target-input="nearest">
+                                            <input type="text" t-attf-class="form-control datetimepicker-input #{field.field_name + '_from'}" t-att-data-target="'#quick_search_datepicker_from' + count" placeholder="from date..." t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]"/>
+                                            <div class="input-group-append" t-att-data-target="'#quick_search_datepicker_from' + count" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-group date quick_search_date" t-att-id="'quick_search_datepicker_to' + count" data-target-input="nearest">
+                                            <input type="text" t-attf-class="form-control datetimepicker-input #{field.field_name + '_to'}" t-att-data-target="'#quick_search_datepicker_to' + count" placeholder="to date..." t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]"/>
+                                            <div class="input-group-append" t-att-data-target="'#quick_search_datepicker_to' + count" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="input-group date quick_search_date" t-att-id="'quick_search_datepicker' + count" data-target-input="nearest">
+                                    <input type="text" class="form-control datetimepicker-input" t-att-data-target="'#quick_search_datepicker' + count" t-att-placeholder="field.operator_id[1] + '...'" t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]"/>
+                                    <div class="input-group-append" t-att-data-target="'#quick_search_datepicker' + count" data-toggle="datetimepicker">
+                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-if="field.field_type == 'datetime'">
+                            <t t-if="field.operator_value == 'between'">
+                                <div class="row quick_search_between">
+                                    <div class="col-6">
+                                        <div class="input-group date quick_search_datetime" t-att-id="'quick_search_datetimepicker_from' + count" data-target-input="nearest">
+                                            <input type="text" t-attf-class="form-control datetimepicker-input #{field.field_name + '_from'}" t-att-data-target="'#quick_search_datetimepicker_from' + count" placeholder="from date..." t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]"/>
+                                            <div class="input-group-append" t-att-data-target="'#quick_search_datetimepicker_from' + count" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-group date quick_search_datetime" t-att-id="'quick_search_datetimepicker_to' + count" data-target-input="nearest">
+                                            <input type="text" t-attf-class="form-control datetimepicker-input #{field.field_name + '_to'}" t-att-data-target="'#quick_search_datetimepicker_to' + count" placeholder="to date..." t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]"/>
+                                            <div class="input-group-append" t-att-data-target="'#quick_search_datetimepicker_to' + count" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="input-group date quick_search_datetime" t-att-id="'quick_search_datetimepicker' + count" data-target-input="nearest">
+                                    <input type="text" class="form-control datetimepicker-input" t-att-data-target="'#quick_search_datetimepicker' + count" t-att-placeholder="field.operator_id[1] + '...'" t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]"/>
+                                    <div class="input-group-append" t-att-data-target="'#quick_search_datetimepicker' + count" data-toggle="datetimepicker">
+                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-if="field.field_type != 'boolean' and field.field_type != 'selection' and field.field_type != 'date' and field.field_type != 'datetime'">
+                            <input type="text" t-attf-class="form-control #{'quick_search_' + field.field_type}" t-att-placeholder="field.operator_id[1] + '...'" t-att-data-name="field.field_name" t-att-data-field-type="field.field_type" t-att-data-operator="field.operator_value" t-att-data-operator-name="field.operator_id[1]"/>
+                        </t>
+                    </div>
+                    <t t-if="count == fields.length or count % 5 == 0">
+                        <div class="w-100"/>
+                    </t>
+                    <t t-if="count == fields.length">
+                        <div class="w-100"/>
+                        <div class="col-12 pb-3">
+                            <button type="button" class="btn btn-primary quick_search_submit">Search</button>
+                            <button type="button" class="btn btn-secondary quick_search_reset">Reset</button>
+                        </div>
+                    </t>
+                </t>
+            </form>
+        </div>
+    </t>
+</templates>

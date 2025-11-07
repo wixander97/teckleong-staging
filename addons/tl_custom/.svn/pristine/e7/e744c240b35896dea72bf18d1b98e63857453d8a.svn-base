@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_purchase_order_form" model="ir.ui.view">
+	    <field name="name">purchase.order.form.inherit.teckleong.custom</field>
+	    <field name="model">purchase.order</field>
+	    <field name="inherit_id" ref="purchase.purchase_order_form"/>
+	    <field name="arch" type="xml">
+  	      	<xpath expr="//field[@name='incoterm_id']" position="after">
+  	      		<field name="sale_order_id" invisible="1" />
+  	      	</xpath>
+
+  	      	<xpath expr="//field[@name='order_line']/tree//field[@name='name']" position="after">
+  	      		<field name="custom_order_line_id" invisible="1" />
+	      		<field name="electrode_number" />
+	      		<field name="batch_number" />
+	      	</xpath>
+	      	<xpath expr="//field[@name='partner_ref']" position="after">
+	      		<field name="shipping_term" />
+	      		<field name="partner_parent_id" invisible="1" />
+	      		<field name="self_collection_id" attrs="{'invisible': [('shipping_term', '!=', 'self_collection')]}" domain="['|', ('id', 'child_of', partner_parent_id),('id', 'child_of', partner_id)]" />
+	      	</xpath>
+	      	<xpath expr="//button[@name='print_quotation']" position="attributes">
+	      		<attribute name="invisible">1</attribute>
+	      	</xpath>
+	    </field>
+	</record>
+
+	<record id="view_purchase_order_tree" model="ir.ui.view">
+	    <field name="name">purchase.order.tree.inherit.teckleong.custom</field>
+	    <field name="model">purchase.order</field>
+	    <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+	    <field name="arch" type="xml">
+  	      	<xpath expr="//field[@name='state']" position="after">
+  	      		<field name="create_date" optional="show" />
+  	      	</xpath>
+	    </field>
+	</record>
+
+	<record id="view_purchase_order_line_tl_custom_tree" model="ir.ui.view">
+	     <field name="name">purchase.order.line.tree</field>
+	    <field name="model">purchase.order.line</field>
+	    <field name="arch" type="xml">
+	        <tree string="Purchase Order Line" create="0" edit="0" delete="0">
+	            <field name="partner_id" />
+	            <field name="product_categ_id" />
+	            <!-- <field name="product_id" /> -->
+	            <field name="name" />
+	            <field name="product_qty" />
+	            <field name="product_uom" />
+	<!--             <field name="width" />
+	            <field name="length" />
+	            <field name="kg" /> -->
+	            <field name="price_unit" />
+	            <field name="price_subtotal" />
+	            <field name="date_order" />
+	            <field name="user_id" />
+	            <field name="state" />
+	        </tree>
+	    </field>
+	</record>
+
+	<record id="action_purchase_order_line_tl_custom" model="ir.actions.act_window">
+	    <field name="name">Purchase Order Line</field>
+	    <field name="type">ir.actions.act_window</field>
+	    <field name="res_model">purchase.order.line</field>
+	    <field name="view_mode">tree</field> 
+	    <field name="view_id" ref="tl_custom.view_purchase_order_line_tl_custom_tree"/>     
+	 <!--    <field name="help" type="html">
+	        <p class="o_view_nocontent_smmiling_face">
+	            Create a new Job Order.
+	        </p>
+	    </field> -->
+	    <!-- <field name="search_view_id" ref="view_sale_order_custom_dimension_line_search"/> -->
+	</record>
+
+    <menuitem id="menu_purchase_order_line_tl_custom" parent="purchase.menu_procurement_management" action="action_purchase_order_line_tl_custom" sequence="10"/>
+
+</odoo>

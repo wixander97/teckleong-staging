@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_quick_search_manager" model="res.groups">
+        <field name="name">Quick Search Manager</field>
+        <field name="category_id" ref="base.module_category_extra_tools"/>
+    </record>
+</odoo>

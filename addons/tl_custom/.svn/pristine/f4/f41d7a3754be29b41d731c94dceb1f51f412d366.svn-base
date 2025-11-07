@@ -1,0 +1,245 @@
+# -*- coding: utf-8 -*-
+#################################################################################
+# Author      : Webkul Software Pvt. Ltd. (<https://webkul.com/>)
+# Copyright(c): 2015-Present Webkul Software Pvt. Ltd.
+# License URL : https://store.webkul.com/license.html/
+# All Rights Reserved.
+#
+#
+#
+# This program is copyright property of the author mentioned above.
+# You can`t redistribute it and/or modify it.
+#
+#
+# You should have received a copy of the License along with this program.
+# If not, see <https://store.webkul.com/license.html/>
+#################################################################################
+
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError, AccessError
+from odoo import SUPERUSER_ID
+import re
+
+import logging
+_logger = logging.getLogger(__name__)
+
+class SaleOrder(models.Model):
+    _inherit = "sale.order"
+
+    def action_create_custom_po(self):
+        print("Test")
+
+    def action_confirm(self):
+        res = super(SaleOrder, self).action_confirm()
+
+        job_order_line_ids = []
+
+        for custom_line in self.custom_dimension_line_ids:
+                product_name = custom_line.parent_product_id.name + '-'
+                
+                if custom_line.parent_product_id.width != custom_line.width:
+                    width_code = chr(int(custom_line.width))
+
+                    while len(width_code) != 4:
+                        width_code = '0' + width_code
+
+                    product_name = product_name + width_code        
+
+                if custom_line.parent_product_id.length != custom_line.length:
+                    length_code = str(int(custom_line.length))
+
+                    while len(length_code) != 4:
+                        length_code = '0' + length_code
+
+                    product_name = product_name + length_code
+
+                product_id = custom_line.parent_product_id.id
+                child_roduct = self.env['product.template'].search([
+                    ('parent_product_id', '=',product_id ),
+                    ('diameter', '=',custom_line.diameter ),
+                    ('height', '=',custom_line.height ),
+                    ('width', '=',custom_line.width ),
+                    ('thickness', '=',custom_line.thickness ),
+                    ('length', '=',custom_line.length ),
+                    ], limit=1)
+                    
+                if child_roduct:
+                    product = child_roduct
+                else : 
+                    product = self.env['product.product'].create({
+                                        'name': product_name,
+                                        'diameter': custom_line.diameter,
+                                        'height': custom_line.height,
+                                        'width': custom_line.width,
+                                        'thickness': custom_line.thickness,
+                                        'length': custom_line.length,
+                                        'dimension_uom_id': custom_line.dimension_uom_id.id,
+                                        'parent_product_id': custom_line.parent_product_id.id,
+                                        'uom_id': custom_line.product_uom_id.id,
+                                        'uom_po_id': custom_line.product_uom_id.id,
+                                        'detailed_type': 'product',
+                                        'tracking': 'lot',
+                                        'categ_id': custom_line.parent_product_id.categ_id.id,
+                                    })
+                job_order_line_ids.append((0, 0, {
+                            'requested_height': custom_line.height,
+                            'requested_width': custom_line.width,
+                            'requested_length': custom_line.length,
+                            'requested_thickness': custom_line.length,
+                            'requested_diameter': custom_line.length,
+                            'product_uom_id': custom_line.dimension_uom_id.id,
+                            'quantity': custom_line.quantity,
+                            'product_id': product.id,
+                            'receipt_location_id': self.warehouse_id.lot_stock_id.id,
+                        }))
+
+                self.order_line.create({
+                            'product_id': product.id,
+                            'product_uom_qty': custom_line.quantity,
+                            'price_unit': custom_line.unit_price,
+                            'tax_id': custom_line.tax_ids._ids,
+                            'order_id': self.id,
+                            'name': product.name,
+                            'product_uom': custom_line.product_uom_id.id,
+                        })        
+
+        self.env['job.order'].create({
+            'sale_order_id': self.id,
+            'job_order_line_ids': job_order_line_ids,
+            'location_id': self.warehouse_id.id,
+            'datetime': self.date_order,
+        })
+
+        return res
+
+    def action_view_job_order(self):
+        self.ensure_one()
+
+        return {
+            'name': 'Job Order',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'tree,form',
+            'res_model': 'job.order',
+            'domain': [('sale_order_id', '=', self.id)],
+            'target': 'current',
+        }
+
+    custom_dimension_line_ids = fields.One2many('sale.order.custom.dimension.line', 'order_id', string='Custom Dimension Line')
+    job_order_ids = fields.One2many('job.order', 'sale_order_id', string='Job Order')
+    is_subcontractor = fields.Boolean('Subcontractor')
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    electrode_number = fields.Char('Electrode Number')
+    batch_number = fields.Char('Batch Number')
+
+class SaleOrderCustomDimensionLine(models.Model):
+    _name = "sale.order.custom.dimension.line"
+    _description = "Sale Order Custom Dimension Line"
+
+    @api.onchange('parent_product_id')
+    def onchange_parent_product_id(self):
+        self.diameter = self.parent_product_id.product_tmpl_id.diameter
+        self.thickness = self.parent_product_id.product_tmpl_id.thickness
+        self.width = self.parent_product_id.product_tmpl_id.width
+        self.length = self.parent_product_id.product_tmpl_id.length
+        self.height = self.parent_product_id.product_tmpl_id.height
+        self.product_uom_id = self.parent_product_id.product_tmpl_id.uom_id
+        self.unit_price = self.parent_product_id.product_tmpl_id.list_price
+        self.description = self.parent_product_id.product_tmpl_id.name
+        self.dimension_uom_id = self.parent_product_id.product_tmpl_id.dimension_uom_id
+
+    @api.depends('tax_ids')
+    def _compute_tax_price(self):
+        for line in self:
+            tax_price = 0
+
+            for tax in line.tax_ids:
+                tax_price += line.unit_price * tax.amount / 100 * line.quantity
+
+            line.tax_price = tax_price
+
+    @api.depends('parent_product_id', 'tax_ids', 'quantity', 'unit_price')
+    def _compute_subtotal(self):
+        for line in self:
+            subtotal = 0 
+
+            subtotal = line.unit_price * line.quantity + line.tax_price
+
+            line.subtotal = subtotal
+
+    @api.onchange('diameter')
+    def onchange_diameter(self):
+        if self.parent_product_id and self.parent_product_id.product_tmpl_id.categ_id:
+            if self.parent_product_id.product_tmpl_id.categ_id.is_have_diameter:
+                if self.parent_product_id.product_tmpl_id.diameter > 0 and self.parent_product_id.product_tmpl_id.diameter != self.diameter:
+                    self.diameter = 0
+                    raise ValidationError("You Cannot change this Product Diameter.")
+            else:
+                self.diameter = 0
+                raise ValidationError("This Product doesn't have Diameter.")
+    @api.onchange('height')
+    def onchange_height(self):
+        if self.parent_product_id and self.parent_product_id.product_tmpl_id.categ_id:
+            if self.parent_product_id.product_tmpl_id.categ_id.is_have_height:
+                if self.parent_product_id.product_tmpl_id.height > 0 and self.parent_product_id.product_tmpl_id.height != self.height:
+                    self.height = 0
+                    raise ValidationError("You Cannot change this Product Height.")
+            else:
+                self.height = 0
+                raise ValidationError("This Product doesn't have Height.")
+
+    @api.onchange('width')
+    def onchange_width(self):
+        if self.parent_product_id and self.parent_product_id.product_tmpl_id.categ_id:
+            if self.parent_product_id.product_tmpl_id.categ_id.is_have_width:
+                if self.parent_product_id.product_tmpl_id.width > 0 and self.parent_product_id.product_tmpl_id.width != self.width:
+                    self.width = 0
+                    raise ValidationError("You Cannot change this Product Width.")
+            else:
+                self.width = 0
+                raise ValidationError("This Product doesn't have Width.")
+
+    @api.onchange('thickness')
+    def onchange_thickness(self):
+        if self.parent_product_id and self.parent_product_id.product_tmpl_id.categ_id:
+            if self.parent_product_id.product_tmpl_id.categ_id.is_have_thickness:
+                if self.parent_product_id.product_tmpl_id.thickness > 0 and self.parent_product_id.product_tmpl_id.thickness != self.thickness:
+                    self.thickness = 0
+                    raise ValidationError("You Cannot change this Product Thickness.")
+            else:
+                self.thickness = 0
+                raise ValidationError("This Product doesn't have Thickness.")
+
+    @api.onchange('length')
+    def onchange_length(self):
+        if self.parent_product_id and self.parent_product_id.product_tmpl_id.categ_id:
+            if self.parent_product_id.product_tmpl_id.categ_id.is_have_length:
+                if self.parent_product_id.product_tmpl_id.length > 0 and self.parent_product_id.product_tmpl_id.length != self.length:
+                    self.length = 0
+                    raise ValidationError("You Cannot change this Product Length.")
+            else:
+                self.length = 0
+                raise ValidationError("This Product doesn't have Length.")
+
+    def action_view_custom_stock(self):
+        print("Test")
+
+    name = fields.Char('Reference')
+    parent_product_id = fields.Many2one('product.product', string='Parent Product')
+    description = fields.Text('Description')
+    width = fields.Float('Width')
+    length = fields.Float('Length')
+    height = fields.Float('Height')
+    diameter = fields.Float('Diameter')
+    thickness = fields.Float('Thickness')
+    dimension_uom_id = fields.Many2one('uom.uom', string='Dimension UoM')
+    product_uom_id = fields.Many2one('uom.uom', string='UoM')
+    unit_price = fields.Float('Unit Price')
+    tax_ids = fields.Many2many('account.tax', string='Taxes')
+    tax_price = fields.Float('Tax Price', compute='_compute_tax_price')
+    subtotal = fields.Float('Subtotal', compute='_compute_subtotal')
+    quantity = fields.Float('Qty', default=1)
+
+    order_id = fields.Many2one('sale.order', string='Order Reference')

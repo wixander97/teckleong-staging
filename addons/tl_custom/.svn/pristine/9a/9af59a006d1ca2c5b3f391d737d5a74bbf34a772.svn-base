@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : https://store.webkul.com/license.html/ -->
+
+<odoo>
+	<data>
+		<record id="view_job_order_tree" model="ir.ui.view">
+	        <field name="name">job.order.tree</field>
+			<field name="model">job.order</field>
+			<field name="arch" type="xml">
+				<tree string="Job Order">
+					<field name="name" />
+					<field name="location_id" />
+					<field name="datetime" />
+					<field name="sale_order_id" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="view_job_order_form" model="ir.ui.view">
+	        <field name="name">job.order.form</field>
+			<field name="model">job.order</field>
+			<field name="arch" type="xml">
+				<form string="Job Order">
+					<header>
+						<button name="action_confirm" type="object" class="oe_highlight" string="Confirm" attrs="{'invisible': ['|', '|', ('state', '=', 'done'), ('state', '=', 'cancel'), ('state', '=', 'confirm')]}" />
+						<button name="action_done" type="object" class="oe_highlight" string="Done" attrs="{'invisible': ['|', '|', ('state', '=', 'done'), ('state', '=', 'cancel'), ('state', '=', 'draft')]}" />
+						<button name="action_draft" type="object" string="Set to Draft" attrs="{'invisible': [('state', '=', 'draft')]}" />
+						<button name="action_cancel" type="object" string="Cancel" attrs="{'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'cancel')]}"/>
+						<button string="Create New Job Order" />
+
+	                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+					</header>
+					<sheet>
+	                    <div class="oe_button_box" name="button_box">
+	                        <button class="oe_stat_button" icon="fa-ticket" string="Stock Operation"  attrs="{'invisible': ['|', '|', ('state', '=', 'draft'), ('state', '=', 'cancel'), ('type', '=', 'multiple_location')]}" type="object" name="action_view_receipt" />
+	                    </div>
+						<group>
+							<group>
+								<h1>
+									<field name="name" required="1" readonly="1" />
+								</h1>
+							</group>
+						</group>
+						<group>
+							<group>
+								<field name="location_id" required="1" attrs="{'invisible': [('type', '=', 'multiple_location')]}" options="{'no_create': True, 'no_create_edit':True}"/>
+								<field name="type" attrs="{'invisible': [('is_child', '=', True)]}" />
+							</group>
+							<group>
+								<field name="datetime" />
+								<field name="sale_order_id" readonly="1" attrs="{'invisible': [('is_child', '=', True)]}" />
+								<field name="is_child" invisible="1" />
+								<field name="job_order_parent_id" attrs="{'invisible': [('is_child', '!=', True)]}" readonly="1" />
+							</group>
+						</group>
+						<notebook>
+							<page string="Products">
+								<field name="job_order_line_ids">
+									<tree create="0">
+										<field name="product_id" />
+										<field name="quantity" />
+										<field name="location_id" attrs="{'column_invisible':[('parent.type', '==', 'single_location')]}" />
+										<field name="requested_diameter" />
+										<field name="requested_height" />
+										<field name="requested_width" />
+										<field name="requested_thickness" />
+										<field name="requested_length" />
+									</tree>
+								</field>
+							</page>
+							<page string="Job Order(Child)" attrs="{'invisible': [('type', '=', 'single_location')]}">
+								<field name="job_order_child_ids">
+									<tree create="0" edit="0" delete="0" >
+										<field name="name" />
+										<field name="location_id" />
+										<field name="state" />
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="view_job_order_line_form" model="ir.ui.view">
+	        <field name="name">job.order.line.form</field>
+	        <field name="model">job.order.line</field>
+	        <field name="arch" type="xml">
+	            <form string="Products">
+	            	<header>
+						<button string="Find Nearest Product" class="oe_highlight" />
+					</header>
+	                <sheet>
+	                	<group>
+	                		<group>
+	                			<field name="product_id" readonly="1" />
+	                			<field name="quantity" readonly="1" />
+
+	                			<field name="is_have_diameter" invisible="1" />
+	                			<field name="is_have_height" invisible="1" />
+	                			<field name="is_have_width" invisible="1" />
+	                			<field name="is_have_thickness" invisible="1" />
+	                			<field name="is_have_length" invisible="1" />
+	                		</group>
+	                		<group>
+	                			<field name="location_id" attrs="{'invisible':[('parent.type', '==', 'single_location')]}" />
+	                			<field name="receipt_location_id" attrs="{'invisible':[('parent.type', '==', 'multiple_location')]}" />
+	                		</group>
+	                	</group>
+	                	<group>
+	                		<group>
+		                		<separator string="Requested Dimension" />
+	                			<field name="requested_diameter" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+	                			<field name="requested_height" attrs="{'invisible': [('is_have_height', '=', False)]}" />
+	                			<field name="requested_width" attrs="{'invisible': [('is_have_width', '=', False)]}" />
+	                			<field name="requested_thickness" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+	                			<field name="requested_length" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+	                			<field name="product_uom_id" options="{'no_create': True, 'no_create_edit':True}" />
+	                		</group>
+	                	</group>
+	                	<notebook attrs="{'invisible':[('parent.type', '!=', 'single_location')]}">
+	                		<page string="Process">
+	                			<field name="process_ids">
+	                				<tree>
+	                					<field name="product_id" />
+	                					<field name="electrode_number" />
+	                					<field name="lot_id" />
+		    							<field name="lot_location_id" />
+		    							<field name="done_quantity" />
+		    							<field name="diameter_balance" attrs="{'column_invisible':[('parent.is_have_diameter', '=', False)]}" />
+		    							<field name="height_balance" attrs="{'column_invisible':[('parent.is_have_height', '=', False)]}" />
+		    							<field name="width_balance" attrs="{'column_invisible':[('parent.is_have_width', '=', False)]}" />
+		    							<field name="thickness_balance" attrs="{'column_invisible':[('parent.is_have_thickness', '=', False)]}" />
+		    							<field name="length_balance" attrs="{'column_invisible':[('parent.is_have_length', '=', False)]}" />
+	                				</tree>
+	                			</field>
+	                		</page>
+	                	</notebook>
+	                </sheet>
+	            </form>
+	        </field>
+    	</record>
+
+    	<record id="view_job_order_line_process_form" model="ir.ui.view">
+    		<field name="name">job.order.line.process.form</field>
+    		<field name="model">job.order.line.process</field>
+    		<field name="arch" type="xml">
+    			<form string="Process">
+    				<sheet>
+    					<group>
+    						<group>
+    							<field name="product_id" options="{'no_create': True, 'no_create_edit':True}" domain="[('parent_product_id', '=', parent_product_id)]" />
+    							<field name="parent_product_id" invisible="1" />
+    							<field name="parent_product_width" invisible="1" />
+    							<field name="parent_product_length" invisible="1" />
+    							<field name="electrode_number" />
+    							<field name="lot_id" domain="[('product_id', '=', product_id)]" />
+    							<field name="lot_location_id" readonly="1" />
+
+    							<field name="is_have_diameter" invisible="1" />
+    							<field name="is_have_height" invisible="1" />
+    							<field name="is_have_width" invisible="1" />
+    							<field name="is_have_thickness" invisible="1" />
+    							<field name="is_have_length" invisible="1" />
+    						</group>
+    						<group>
+    							<field name="on_hand_quantity" />
+    							<field name="forecasted_quantity" />
+    							<field name="used_quantity" />
+    						</group>
+    					</group>
+    					<group>
+    						<group>
+    							<separator string="Requested Dimension" />
+    							<field name="requested_diameter" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+    							<field name="requested_height" attrs="{'invisible': [('is_have_height', '=', False)]}" />
+    							<field name="requested_width" attrs="{'invisible': [('is_have_width', '=', False)]}" />
+    							<field name="requested_thickness" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+    							<field name="requested_length" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+    							<field name="requested_qty" invisible="1" />
+    						</group>
+    					</group>
+    					<group>
+    						<group>
+		                		<separator string="Original Dimension" />
+		                		<field name="original_diameter" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+		                		<field name="original_height" attrs="{'invisible': [('is_have_height', '=', False)]}" />
+		                		<field name="original_width" attrs="{'invisible': [('is_have_width', '=', False)]}" />
+		                		<field name="original_thickness" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+		                		<field name="original_length" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+    						</group>
+    						<group>
+		                		<separator string="Balance Dimension" />
+		                		<field name="diameter_balance" readonly="1" force_save="1" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+		                		<field name="height_balance" readonly="1" force_save="1" attrs="{'invisible': [('is_have_height', '=', False)]}" />
+		                		<field name="width_balance" attrs="{'invisible': [('is_have_width', '=', False)], 'readonly': [('parent_product_width', '!=', 0)]}" />
+		                		<field name="thickness_balance" readonly="1" force_save="1" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+		                		<field name="length_balance" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+    						</group>
+    					</group>
+    					<group>
+    						<group>
+    							<field name="done_quantity" />
+    						</group>
+    					</group>
+    				</sheet>
+    			</form>
+    		</field>
+    	</record>
+
+		<record id="action_job_order" model="ir.actions.act_window">
+			<field name="name">Job Order</field>
+	        <field name="type">ir.actions.act_window</field>
+	        <field name="res_model">job.order</field>
+	        <field name="view_mode">tree,form</field>      
+	        <field name="help" type="html">
+	            <p class="o_view_nocontent_smmiling_face">
+	                Create a new Job Order.
+	            </p>
+	        </field>
+		</record>
+
+		<menuitem id="menu_teckleong_root" name="Teckleong" sequence="80"/>
+		<menuitem id="menu_job_order_root" parent="menu_teckleong_root" name="Job Order" sequence="10"/>
+		<menuitem id="menu_job_order" parent="menu_job_order_root" action="action_job_order" sequence="10"/>
+	</data>
+</odoo>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="tl_custom_filter_info_template" inherit_id="account_reports.filter_info_template">
+            <xpath expr="//div[@class='row print_only']//div[1]" position="replace">
+                <div class="col-4" style="font-size: 20px;">
+                    <t t-if="options.get('date') and options['date'].get('string')"><t t-esc="options['date']['string']"/></t>
+                        <br/><div><t t-esc="report.get('name')"/></div>
+                </div>
+            </xpath>
+            <xpath expr="//div[@class='row print_only']//div[1]" position="attributes">
+                <attribute name="class">col-8</attribute>
+            </xpath>
+            <xpath expr="//div[@class='row print_only']//div[2]" position="attributes">
+                <attribute name="style">font-size: 20px;</attribute>
+            </xpath>
+            <xpath expr="//div[@class='row print_only']//div[2]//div[1]" position="replace">
+                <div></div>
+            </xpath>
+        </template>
+
+
+        <template id="tl_custom_main_template" inherit_id="account_reports.main_template">
+            <xpath expr="//div[@class='o_account_reports_header']" position="replace">
+                <div class="o_account_reports_header">
+                    <div class="print_only"><div style="font-size: 30px; font-weight: bold;"><t t-esc="report.get('company_name')"></t></div></div>
+                    <t t-call="account_reports.filter_info_template"/>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

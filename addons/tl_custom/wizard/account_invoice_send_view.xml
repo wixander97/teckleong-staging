@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="account_invoice_send_mail_invoice_form_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.send.form</field>
+            <field name="model">account.invoice.send</field>
+            <field name="inherit_id" ref="account.account_invoice_send_wizard_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='subject']" position="before">
+                    <field name="email_cc"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

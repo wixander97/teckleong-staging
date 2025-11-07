@@ -1,0 +1,313 @@
+# -*- coding: utf-8 -*-
+#################################################################################
+# Author      : Webkul Software Pvt. Ltd. (<https://webkul.com/>)
+# Copyright(c): 2015-Present Webkul Software Pvt. Ltd.
+# License URL : https://store.webkul.com/license.html/
+# All Rights Reserved.
+#
+#
+#
+# This program is copyright property of the author mentioned above.
+# You can`t redistribute it and/or modify it.
+#
+#
+# You should have received a copy of the License along with this program.
+# If not, see <https://store.webkul.com/license.html/>
+#################################################################################
+
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
+from odoo import SUPERUSER_ID
+from odoo.exceptions import UserError, ValidationError, AccessError
+import re
+
+import logging
+_logger = logging.getLogger(__name__)
+
+class JobOrder(models.Model):
+    _name = "job.order"
+    _description = "Job Order"
+
+    @api.model
+    def create(self, vals):
+        if not vals.get('name'):
+            vals['name'] = self.env['ir.sequence'].next_by_code('job.order')
+        res = super(JobOrder, self).create(vals)
+
+        return res
+
+    def action_confirm(self):
+        self.state = 'confirm'
+
+        if self.type == 'multiple_location':
+            i = 1
+            for line in self.job_order_line_ids:
+                job_order_line_ids = []
+                job_order_line_ids.append((0, 0, {
+                    'product_id': line.product_id.id,
+                    'requested_height': line.requested_height,
+                    'requested_width': line.requested_width,
+                    'requested_length': line.requested_length,
+                    'quantity': line.quantity,
+                    'product_uom_id': line.product_uom_id.id,
+                }))
+
+                self.create({
+                    'name': self.name + '-' + str(i),
+                    'type': 'single_location',
+                    'is_child': True,
+                    'job_order_parent_id': self.id,
+                    'location_id': line.location_id.id,
+                    'job_order_line_ids': job_order_line_ids,
+                })
+
+                i += 1
+
+    def action_done(self):
+        self.state = 'done'
+
+        if self.type == 'single_location':
+            move_ids_without_package = []
+            move_line_ids_without_package = []
+            picking_type = self.env['stock.picking.type']
+            picking_obj = picking_type.search([('code', '=', 'incoming'), ('warehouse_id', '=', self.location_id.id), ('sequence_code', '=', 'JOIN')])
+            picking_do_obj = picking_type.search([('code', '=', 'outgoing'), ('warehouse_id', '=', self.location_id.id), ('sequence_code', '=', 'JOOUT')])
+
+            picking = self.env['stock.picking'].create({
+                'origin': self.name,
+                'picking_type_id': picking_obj.id,
+                'location_id': picking_obj.default_location_src_id.id,
+                'location_dest_id': picking_obj.default_location_dest_id.id,
+                'immediate_transfer': True,
+            })
+
+            picking_do = self.env['stock.picking'].create({
+                'origin': self.name,
+                'picking_type_id': picking_do_obj.id,
+                'location_id': picking_do_obj.default_location_src_id.id,
+                'location_dest_id': picking_do_obj.default_location_dest_id.id,
+                'immediate_transfer': True,
+            })
+
+            for line in self.job_order_line_ids:
+                move_line_nosuggest_ids = []
+
+                for process in line.process_ids:
+                    move_line_nosuggest_ids.append((0, 0, {
+                        'qty_done': process.done_quantity,
+                        'product_id': line.product_id.id,
+                        'product_uom_id': line.parent_product_id.uom_id.id,
+                        'location_id': picking_obj.default_location_src_id.id,
+                        'location_dest_id': picking_obj.default_location_dest_id.id,
+                        'picking_id': picking.id,
+                        'lot_name': 'test',
+                    }))
+
+                    move_line_ids_without_package.append((0, 0, {
+                        'product_id': process.product_id.id,
+                        'location_id':  picking_do_obj.default_location_src_id.id,
+                        'location_dest_id': picking_do_obj.default_location_dest_id.id,
+                        'lot_id': process.lot_id.id,
+                        'qty_done': process.used_quantity,
+                        'product_uom_id': line.parent_product_id.uom_id.id,
+                    }))
+
+                    product_name = process.parent_product_id.name + '-'
+
+                    if process.parent_product_id.width != process.width_balance:
+                        width_code = chr(int(process.width_balance))
+
+                        while len(width_code) != 4:
+                            width_code = '0' + width_code
+
+                        product_name = product_name + width_code
+
+                    if process.parent_product_id.length != process.length_balance:
+                        length_code = str(int(process.length_balance))
+
+                        while len(length_code) != 4:
+                            length_code = '0' + length_code
+
+                        product_name = product_name + length_code
+                   
+                    product_id = process.parent_product_id.id
+                    child_roduct = self.env['product.template'].search([
+                        ('parent_product_id', '=',product_id ),
+                        ('diameter', '=',process.diameter_balance ),
+                        ('height', '=',process.height_balance ),
+                        ('width', '=',process.width_balance ),
+                        ('thickness', '=',process.thickness_balance ),
+                        ('length', '=',process.length_balance ),
+                        ], limit=1)
+                        
+                    if child_roduct:
+                        continue
+                    else :
+                        self.env['product.product'].create({
+                                    'name': product_name,
+                                    'diameter': process.diameter_balance,
+                                    'height': process.height_balance,
+                                    'width': process.width_balance,
+                                    'thickness': process.thickness_balance,
+                                    'length': process.length_balance,
+                                    'dimension_uom_id': process.parent_product_id.dimension_uom_id.id,
+                                    'parent_product_id': process.parent_product_id.id,
+                                    'uom_id': process.parent_product_id.uom_id.id,
+                                    'uom_po_id': process.parent_product_id.uom_id.id,
+                                    'detailed_type': 'product',
+                                    'tracking': 'lot',
+                                    'categ_id': process.parent_product_id.categ_id.id,
+                                })
+                move_ids_without_package.append((0, 0, {
+                    'name': 'test',
+                    'product_uom': line.parent_product_id.uom_id.id,
+                    'location_id': picking_obj.default_location_src_id.id,
+                    'location_dest_id': picking_obj.default_location_dest_id.id,
+                    'product_id': line.product_id.id,
+                    'move_line_nosuggest_ids': move_line_nosuggest_ids
+                }))                
+
+            picking.move_ids_without_package = move_ids_without_package
+            picking_do.move_line_ids_without_package = move_line_ids_without_package
+
+            self.picking_ids += picking + picking_do
+            picking.action_confirm()
+            picking.button_validate()
+            picking_do.action_confirm()
+            picking_do.button_validate()
+
+        else:
+            print("Test")
+
+    def action_draft(self):
+        self.state = 'draft'
+
+    def action_cancel(self):
+        self.state = 'cancel'
+
+    def action_view_receipt(self):
+        self.ensure_one()
+
+        return {
+            'name': 'Receipts',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'tree,form',
+            'res_model': 'stock.picking',
+            'domain': [('id', 'in', self.mapped('picking_ids').ids)],
+        }
+
+    name = fields.Char('Reference')
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('confirm', 'Confirm'),
+        ('done', 'Done'),
+        ('cancel', 'Cancel'),
+    ], string='State', default='draft')
+    type = fields.Selection([
+        ('single_location', 'Single Location'),
+        ('multiple_location', 'Multiple Location')
+    ], string='Type', default='single_location')
+    job_order_child_ids = fields.One2many('job.order', 'job_order_parent_id', string='Job Order Child')
+    job_order_parent_id = fields.Many2one('job.order', string='Job Order Parent')
+    job_order_line_ids = fields.One2many('job.order.line', 'job_order_id', string='Job Order Line')
+    location_id = fields.Many2one('stock.warehouse', string='Location')
+    sale_order_id = fields.Many2one(comodel_name='sale.order', string='Sale Order')
+    is_child = fields.Boolean('Is Child')
+    datetime = fields.Datetime('Datetime')
+    picking_ids = fields.Many2many('stock.picking', string='Pickings')
+
+class JobOrderLine(models.Model):
+    _name = "job.order.line"
+    _description = "Job Order Line"
+    
+    def action_open_record(self):
+        context = self.env.context
+
+        return{
+            'type': 'ir.actions.act_window',
+            'name': 'Products',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': self._name,
+            'res_id': context.get('default_active_id'),
+            'target': 'new',
+        }
+
+    name = fields.Char('Reference')
+    requested_width = fields.Float('Requested Width')
+    requested_length = fields.Float('Requested Length')
+    requested_height = fields.Float('Requested Height')
+    requested_diameter = fields.Float('Requested Diameter')
+    requested_thickness = fields.Float('Requested Thickness')
+    product_uom_id = fields.Many2one('uom.uom', string='UoM')
+    quantity = fields.Float('Qty')
+    location_id = fields.Many2one('stock.warehouse', string='Location')
+    process_ids = fields.One2many('job.order.line.process', 'job_order_line_id', string='Job Order Process')
+    product_id = fields.Many2one('product.product', string='Product')
+    parent_product_id = fields.Many2one('product.product', string='Parent Product', related='product_id.parent_product_id')
+    parent_product_categ_id = fields.Many2one('product.category', string='Parent Product Category', related='parent_product_id.categ_id')
+    is_have_diameter = fields.Boolean('Have Diameter', related='parent_product_categ_id.is_have_diameter')
+    is_have_height = fields.Boolean('Have Height', related='parent_product_categ_id.is_have_height')
+    is_have_width = fields.Boolean('Have Width', related='parent_product_categ_id.is_have_width')
+    is_have_thickness = fields.Boolean('Have Thickness', related='parent_product_categ_id.is_have_thickness')
+    is_have_length = fields.Boolean('Have Length', related='parent_product_categ_id.is_have_length')
+    receipt_location_id = fields.Many2one('stock.location', string='Receipt Location')
+
+    job_order_id = fields.Many2one('job.order', 'Job Order')
+
+class JobOrderLineProcess(models.Model):
+    _name = "job.order.line.process"
+    _description = "Job Order Line Process"
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        if self.product_id:
+            self.used_quantity = 1
+            self.diameter_balance = self.original_diameter
+            self.height_balance = self.original_height
+            self.thickness_balance = self.original_thickness
+
+            if self.parent_product_id.product_tmpl_id.width == 0:
+                self.width_balance = self.original_width - self.requested_width
+            else:
+                self.width_balance = self.original_width
+
+            if self.parent_product_id.product_tmpl_id.length == 0:
+                self.length_balance = self.original_length - self.requested_length
+
+    name = fields.Char('Reference')
+    product_id = fields.Many2one(comodel_name='product.product', string='Product')
+    original_width = fields.Float('Original Width', related='product_id.width')
+    original_length = fields.Float('Original Length', related='product_id.length')
+    original_height = fields.Float('Original Height', related='product_id.height')
+    original_thickness = fields.Float('Original Thickness', related='product_id.thickness')
+    original_diameter = fields.Float('Original Diameter', related='product_id.diameter')
+    width_balance = fields.Float('Width Balance')
+    length_balance = fields.Float('Length Balance')
+    height_balance = fields.Float('Height Balance')
+    thickness_balance = fields.Float('Thickness Balance')
+    diameter_balance = fields.Float('Diameter Balance')
+    lot_location_id = fields.Many2one('stock.location', string='Lot Location')
+    used_quantity = fields.Float('Used Qty')
+    on_hand_quantity = fields.Float('On-Hand Qty', related='product_id.product_tmpl_id.qty_available')
+    forecasted_quantity = fields.Float('Forecasted Qty', related='product_id.product_tmpl_id.virtual_available')
+    electrode_number = fields.Char('Electrode Number')
+    lot_id = fields.Many2one('stock.production.lot' ,string='Lot Number')
+    done_quantity = fields.Float('Done Qty')
+
+    job_order_line_id = fields.Many2one('job.order.line', string='Job Order Line')
+    parent_product_id = fields.Many2one('product.product', string='Parent Product', related='job_order_line_id.product_id.parent_product_id')
+    parent_product_width = fields.Float('Parent Width', related='parent_product_id.product_tmpl_id.width')
+    parent_product_length = fields.Float('Parent Length', related='parent_product_id.product_tmpl_id.length')
+    parent_product_categ_id = fields.Many2one('product.category', string='Parent Product Category', related='parent_product_id.categ_id')
+    is_have_diameter = fields.Boolean('Have Diameter', related='parent_product_categ_id.is_have_diameter')
+    is_have_height = fields.Boolean('Have Height', related='parent_product_categ_id.is_have_height')
+    is_have_width = fields.Boolean('Have Width', related='parent_product_categ_id.is_have_width')
+    is_have_thickness = fields.Boolean('Have Thickness', related='parent_product_categ_id.is_have_thickness')
+    is_have_length = fields.Boolean('Have Length', related='parent_product_categ_id.is_have_length')
+    requested_height = fields.Float(string='Requested Height', related='job_order_line_id.requested_height')
+    requested_width = fields.Float(string='Requested Width', related='job_order_line_id.requested_width')
+    requested_length = fields.Float(string='Requested Length', related='job_order_line_id.requested_length')
+    requested_diameter = fields.Float('Requested Diameter', related='job_order_line_id.requested_diameter')
+    requested_thickness = fields.Float('Requested Thickness', related='job_order_line_id.requested_thickness')
+    requested_qty = fields.Float('Requested Qty', related='job_order_line_id.quantity')

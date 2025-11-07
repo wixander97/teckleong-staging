@@ -1,0 +1,64 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+
+from collections import defaultdict
+from datetime import timedelta
+from itertools import groupby
+from odoo.tools import groupby as groupbyelem
+from operator import itemgetter
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+from odoo.osv import expression
+from odoo.tools.float_utils import float_compare, float_is_zero, float_round
+from odoo.tools.misc import clean_context, OrderedSet
+
+PROCUREMENT_PRIORITIES = [('0', 'Normal'), ('1', 'Urgent')]
+
+
+class StockMove(models.Model):
+    _inherit = "stock.move"
+
+    electrode_number = fields.Char('Electrode Number')
+    notes = fields.Char('Notes')
+
+    def _get_new_picking_values(self):
+        res = super(StockMove, self)._get_new_picking_values()
+
+        origins = self.filtered(lambda m: m.origin).mapped('origin')
+        origins = list(dict.fromkeys(origins)) # create a list of unique items
+        # Will display source document if any, when multiple different origins
+        # are found display a maximum of 5
+        if len(origins) == 0:
+            origin = False
+        else:
+            origin = ','.join(origins[:5])
+            if len(origins) > 5:
+                origin += "..."
+        
+        sale = self.env['sale.order'].search([('name', '=', origins)])
+
+        teckleong_stock_type = 'delivery'
+
+        if sale:
+            if sale.self_collection_location:
+                teckleong_stock_type = 'self_collection'
+
+        res.update({
+            'po_ref': sale.po_ref,
+            'customer_ref': sale.client_order_ref,
+            'teckleong_stock_type': teckleong_stock_type,
+            'note': sale.remarks,
+        })
+        return res
+
+class StockRule(models.Model):
+    _inherit = 'stock.rule'
+
+    def _get_stock_move_values(self, product_id, product_qty, product_uom, location_id, name, origin, company_id, values):
+        res = super(StockRule, self)._get_stock_move_values(product_id, product_qty, product_uom, location_id, name, origin, company_id, values)
+        res['electrode_number'] = values.get('electrode_number', False)
+        res['notes'] = values.get('notes', False)
+
+        return res

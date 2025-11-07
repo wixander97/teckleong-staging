@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : https://store.webkul.com/license.html/ -->
+
+<odoo>
+	<data>
+		<record id="view_job_order_tree" model="ir.ui.view">
+	        <field name="name">job.order.tree</field>
+			<field name="model">job.order</field>
+			<field name="arch" type="xml">
+				<tree string="Job Order">
+					<field name="name" />
+					<field name="customer_id" />
+					<field name="type" />
+					<field name="location_id" />
+					<field name="datetime" />
+					<field name="delivery_date" />
+					<field name="sale_order_id" />
+					<field name="state" />
+					<field name="validation_status" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="view_job_order_tree_driver" model="ir.ui.view">
+	        <field name="name">job.order.tree</field>
+			<field name="model">job.order</field>
+			<field name="arch" type="xml">
+				<tree string="Job Order:Driver" create="0" delete="0">
+					<field name="name" />
+					<field name="customer_id" />
+					<field name="type" />
+					<field name="location_id" />
+					<field name="datetime" />
+					<field name="delivery_date" />
+					<field name="sale_order_id" />
+					<field name="state" />
+					<field name="validation_status" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="view_job_order_form" model="ir.ui.view">
+	        <field name="name">job.order.form</field>
+			<field name="model">job.order</field>
+			<field name="priority">1</field>
+			<field name="arch" type="xml">
+				<form string="Job Order">
+					<header>
+						<button name="action_confirm" type="object" class="oe_highlight" string="Confirm" attrs="{'invisible': ['|', '|', ('state', '=', 'done'), ('state', '=', 'cancel'), ('state', '=', 'confirm')]}" />
+						<button name="action_done" type="object" class="oe_highlight" string="Done" attrs="{'invisible': ['|', '|', ('state', '=', 'done'), ('state', '=', 'cancel'), ('state', '=', 'draft')]}" />
+						<button name="action_draft" type="object" string="Set to Draft" attrs="{'invisible': [('state', '=', 'draft')]}" />
+						<button name="action_cancel" type="object" string="Cancel" attrs="{'invisible': ['|', ('state', '=', 'draft'), ('state', '=', 'cancel')]}"/>
+						<button string="Create New Job Order" invisible="1" />
+
+	                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+					</header>
+					<sheet>
+	                    <div class="oe_button_box" name="button_box">
+	                        <button class="oe_stat_button" icon="fa-ticket" string="Stock Operation"  attrs="{'invisible': ['|', '|', ('state', '=', 'draft'), ('state', '=', 'cancel'), ('type', '=', 'multiple_location')]}" type="object" name="action_view_receipt" />
+	                    </div>
+						<group>
+							<group>
+								<h1>
+									<field name="name" required="1" readonly="1" />
+								</h1>
+							</group>
+						</group>
+						<group>
+							<group>
+								<field name="customer_id" />
+								<field name="job_order_line_id" invisible="1" />
+								<field name="job_order_id_char" invisible="1" />
+								<field name="location_id" required="1" attrs="{'invisible': [('type', '=', 'multiple_location')]}" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+								<field name="type" required="1" attrs="{'invisible': [('is_child', '=', True)]}" />
+								<field name="validation_status" />
+							</group>
+							<group>
+								<field name="datetime" />
+								<field name="delivery_date" />
+								<field name="sale_order_id" readonly="1" />
+								<field name="is_child" invisible="1" />
+								<field name="job_order_parent_id" attrs="{'invisible': [('is_child', '!=', True)]}" readonly="1" />
+								<field name="do_id" invisible="0" />
+							</group>
+						</group>
+						<notebook>
+							<page string="Products">
+								<field name="job_order_line_ids">
+									<tree create="0">
+										<field name="product_id" />
+										<field name="quantity" />
+										<!-- <field name="location_id" attrs="{'column_invisible':[('parent.type', '==', 'single_location')]}" /> -->
+										
+									</tree>
+								</field>
+							</page>
+							<page string="Cutting" attrs="{'invisible': [('type', '!=', 'single_location')]}">
+								<field name="job_order_cutting_ids" context="{'default_job_order_id_char': job_order_id_char}">
+									<tree decoration-danger="is_exceed_deviation">
+										<field name="job_order_id_char" invisible="1" />
+										<field name="product_id" />
+										<!-- <field name="electrode_number" /> -->
+										<field name="lot_id" />
+										<field name="lot_location_id" />
+		    							<field name="is_exceed_deviation" invisible="1" />
+									</tree>
+								</field>
+							</page>
+							<page string="Job Order(Child)" attrs="{'invisible': [('type', '=', 'single_location')]}">
+								<field name="job_order_child_ids">
+									<tree create="0" edit="0" delete="0" >
+										<field name="name" />
+										<field name="location_id" />
+										<field name="state" />
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="view_job_order_form_driver" model="ir.ui.view">
+	        <field name="name">job.order.form</field>
+			<field name="model">job.order</field>
+			<field name="priority">2</field>
+			<field name="arch" type="xml">
+				<form string="Job Order" create="0" delete="0">
+					<header>
+	                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+					</header>
+					<sheet>
+	                    <div class="oe_button_box" name="button_box">
+	                        <button class="oe_stat_button" icon="fa-ticket" string="Stock Operation"  attrs="{'invisible': ['|', '|', ('state', '=', 'draft'), ('state', '=', 'cancel'), ('type', '=', 'multiple_location')]}" type="object" name="action_view_receipt" />
+	                    </div>
+						<group>
+							<group>
+								<h1>
+									<field name="name" required="1" readonly="1" />
+								</h1>
+							</group>
+						</group>
+						<group>
+							<group>
+								<field name="customer_id" />
+								<field name="job_order_line_id" invisible="1" />
+								<field name="job_order_id_char" invisible="1" />
+								<field name="driver_id" domain="[('is_driver', '=', True)]" options="{'no_create': True, 'no_create_edit':True}" />
+								<field name="is_delivered" attrs="{'invisible': [('driver_id', '=', False)]}" />
+								<field name="location_id" readonly="1" attrs="{'invisible': [('type', '=', 'multiple_location')]}"/>
+								<field name="type" readonly="1" attrs="{'invisible': [('is_child', '=', True)]}" />
+								<field name="validation_status" />
+							</group>
+							<group>
+								<field name="datetime" readonly="1" />
+								<field name="delivery_date" />
+								<field name="sale_order_id" readonly="1" />
+								<field name="is_child" invisible="1" />
+								<field name="job_order_parent_id" attrs="{'invisible': [('is_child', '!=', True)]}" readonly="1" />
+								<field name="do_id" invisible="0" />
+							</group>
+						</group>
+						<notebook>
+							<page string="Products">
+								<field name="job_order_line_ids" readonly="1">
+									<tree create="0">
+										<field name="product_id" />
+										<field name="quantity" />
+										<field name="location_id" attrs="{'column_invisible':[('parent.type', '==', 'single_location')]}" />
+										
+									</tree>
+								</field>
+							</page>
+							<page string="Cutting" attrs="{'invisible': [('type', '!=', 'single_location')]}">
+								<field name="job_order_cutting_ids" context="{'default_job_order_id_char': job_order_id_char}" readonly="1">
+									<tree decoration-danger="is_exceed_deviation">
+										<field name="job_order_id_char" invisible="1" />
+										<field name="product_id" />
+										<!-- <field name="electrode_number" /> -->
+										<field name="lot_id" />
+										<field name="lot_location_id" />
+		    							<field name="is_exceed_deviation" invisible="1" />
+									</tree>
+								</field>
+							</page>
+							<page string="Job Order(Child)" attrs="{'invisible': [('type', '=', 'single_location')]}">
+								<field name="job_order_child_ids" readonly="1">
+									<tree create="0" edit="0" delete="0" >
+										<field name="name" />
+										<field name="location_id" />
+										<field name="state" />
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="view_job_order_line_form" model="ir.ui.view">
+	        <field name="name">job.order.line.form</field>
+	        <field name="model">job.order.line</field>
+	        <field name="arch" type="xml">
+	            <form string="Products">
+	            	<header>
+						<!-- <button string="Find Nearest Product" type="object" name="action_nearest_product" class="oe_highlight" attrs="{'invisible':[('parent.type', '==', 'multiple_location')]}" /> -->
+					</header>
+	                <sheet>
+	                	<group>
+	                		<group>
+	                			<field name="product_id" readonly="1" />
+	                			<field name="quantity" readonly="1" />
+	                			<field name="done_quantity" readonly="1" />
+
+	                			<field name="is_have_diameter" invisible="1" />
+	                			<!-- <field name="is_have_height" invisible="1" /> -->
+	                			<field name="is_have_width" invisible="1" />
+	                			<field name="is_have_thickness" invisible="1" />
+	                			<field name="is_have_length" invisible="1" /> 
+	                			<field name="is_have_kg" invisible="1" /> 
+	                			<field name="is_have_across_flat" invisible="1" />
+	                			<field name="is_have_width_2" invisible="1" />
+	                			<field name="is_have_mesh_number" invisible="1" />
+	                			<field name="is_have_mesh_size" invisible="1" />
+	                			<field name="is_have_hole_diameter" invisible="1" />
+	                			<field name="is_have_pitch" invisible="1" />
+	                			<field name="is_have_inner_diameter" invisible="1" />
+	                		</group>
+	                		<group>
+	                			<!-- <field name="location_id" attrs="{'invisible':[('parent.type', '==', 'single_location')]}" /> -->
+	                			<field name="receipt_location_id" attrs="{'invisible':[('parent.type', '==', 'multiple_location')]}" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" />
+    							<field name="electrode_number" />
+    							<field name="batch_number" />
+	                			<!-- <field name="lot_name" /> -->
+	                		</group>
+	                	</group>
+	                	<group>
+	                		<group>
+		                		<separator string="Requested Dimension" />
+	                			<field name="requested_diameter" readonly="1" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+	                			<!-- <field name="requested_height" readonly="1" attrs="{'invisible': [('is_have_height', '=', False)]}" /> -->
+	                			<field name="requested_width" readonly="1" attrs="{'invisible': [('is_have_width', '=', False)]}" />
+	                			<field name="requested_thickness" readonly="1" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+	                			<field name="requested_length" readonly="1" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+	                			<field name="requested_kg" readonly="1" attrs="{'invisible': [('is_have_kg', '=', False)]}" />
+	                			<field name="requested_across_flat" readonly="1" attrs="{'invisible': [('is_have_across_flat', '=', False)]}" />
+	                			<field name="requested_width_2" readonly="1" attrs="{'invisible': [('is_have_width_2', '=', False)]}" />
+	                			<field name="requested_mesh_number" readonly="1" attrs="{'invisible': [('is_have_mesh_number', '=', False)]}" />
+	                			<field name="requested_mesh_size" readonly="1" attrs="{'invisible': [('is_have_mesh_size', '=', False)]}" />
+	                			<field name="requested_hole_diameter" readonly="1" attrs="{'invisible': [('is_have_hole_diameter', '=', False)]}" />
+	                			<field name="requested_pitch" readonly="1" attrs="{'invisible': [('is_have_pitch', '=', False)]}" />
+	                			<field name="requested_inner_diameter" readonly="1" attrs="{'invisible': [('is_have_inner_diameter', '=', False)]}" />
+	                			<field name="product_uom_id" readonly="1" options="{'no_create': True, 'no_create_edit':True}" />
+	                		</group>
+	                	</group>
+	                </sheet>
+	            </form>
+	        </field>
+    	</record>
+
+    	<record id="view_job_order_cutting_form" model="ir.ui.view">
+    		<field name="name">job.order.cutting.form</field>
+    		<field name="model">job.order.cutting</field>
+    		<field name="arch" type="xml">
+    			<form string="Cutting">
+    				<sheet>
+    					<group>
+    						<group>
+    							<field name="is_exceed_deviation" invisible="1" />
+    							<field name="job_order_id" invisible="1" />
+    							<field name="job_order_id_char" invisible="1" force_save="1" />
+    							<field name="product_ids" widget="many2many_tags" invisible="1" />
+    							<field name="product_ids_parent_product_ids" widget="many2many_tags" invisible="1" />
+    							<field name="parent_product_id" invisible="1" />
+    							<field name="is_have_diameter" invisible="1" />
+    							<!-- <field name="is_have_height" invisible="1" /> -->
+    							<field name="is_have_width" invisible="1" />
+    							<field name="is_have_thickness" invisible="1" />
+    							<field name="is_have_length" invisible="1" /> 
+    							<field name="is_have_kg" invisible="1" /> 
+    							<field name="is_have_across_flat" invisible="1" />
+    							<field name="is_have_width_2" invisible="1" />
+    							<field name="is_have_mesh_number" invisible="1" />
+    							<field name="is_have_mesh_size" invisible="1" />
+    							<field name="is_have_hole_diameter" invisible="1" />
+    							<field name="is_have_pitch" invisible="1" />
+    							<field name="is_have_inner_diameter" invisible="1" />
+    							<field name="job_order_warehouse_id" invisible="1" />
+    							<field name="warehouse_location_id" invisible="1" />
+    							<field name="stock_quantity_id" required="1" 
+    								domain="[
+    									('location_id', 'like', warehouse_code), 
+    									('quantity', '&gt;', 0),
+    									'|', 
+    									('product_id.parent_product_id', 'in', product_ids_parent_product_ids),
+    									('product_id', 'in', product_ids_parent_product_ids)]" 
+    							options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" />
+
+
+    							<field name="product_id" domain="[('parent_product_id', 'in', product_ids_parent_product_ids), ('qty_available', '&gt;', 0)]" options="{'no_create': True, 'no_create_edit':True}" />
+    						</group>
+    						<group>
+    							<field name="on_hand_quantity" />
+    							<field name="on_hand_quantity_stored" />
+    							<field name="lot_id" />
+    							<field name="lot_location_id" />
+    							<field name="warehouse_code" invisible="1" />
+    						</group>
+    					</group>
+    					<group>
+    						<group>
+    							<separator string="Original Dimension" />
+    							<field name="original_diameter" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+    							<!-- <field name="original_height" attrs="{'invisible': [('is_have_height', '=', False)]}" /> -->
+    							<field name="original_width" attrs="{'invisible': [('is_have_width', '=', False)]}" />
+    							<field name="original_thickness" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+    							<field name="original_length" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+    							<field name="original_kg" attrs="{'invisible': [('is_have_kg', '=', False)]}" />
+    							<field name="original_across_flat" attrs="{'invisible': [('is_have_across_flat', '=', False)]}" />
+    							<field name="original_width_2" attrs="{'invisible': [('is_have_width_2', '=', False)]}" />
+    							<field name="original_mesh_number" attrs="{'invisible': [('is_have_mesh_number', '=', False)]}" />
+    							<field name="original_mesh_size" attrs="{'invisible': [('is_have_mesh_size', '=', False)]}" />
+    							<field name="original_hole_diameter" attrs="{'invisible': [('is_have_hole_diameter', '=', False)]}" />
+    							<field name="original_pitch" attrs="{'invisible': [('is_have_pitch', '=', False)]}" />
+    							<field name="original_inner_diameter" attrs="{'invisible': [('is_have_inner_diameter', '=', False)]}" />
+    							<field name="parent_product_length" invisible="1" />
+    							<field name="parent_product_width" invisible="1" />
+    							<field name="parent_product_kg" invisible="1" />
+    						</group>
+    					</group>
+    					<notebook>
+	                		<page string="Products">
+	                			<field name="line_ids">
+	                				<tree editable="bottom">
+	                					<field name="job_order_line_id" required="1" domain="[('parent_product_id', '=', parent.parent_product_id), ('job_order_id', '=', parent.job_order_id_char)]" options="{'no_create': True, 'no_create_edit':True}" />
+	                					<field name="done_quantity" />
+	                				</tree>
+	                			</field>
+	                		</page>
+	                		<page string="Balances">
+	                			<field name="balance_ids">
+	                				<tree editable="bottom">
+	                					<field name="parent_product_id" />
+	                					<field name="receipt_location_id" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" />
+	                					<field name="lot_name" required="1" />
+	                					<field name="diameter_balance" force_save="1" invisible="1" />
+	                					<!-- <field name="height_balance" force_save="1" attrs="{'column_invisible': [('parent.is_have_height', '=', False)]}" /> -->
+	                					<field name="width_balance" force_save="1" attrs="{'column_invisible': ['|', ('parent.parent_product_width', '!=', 0),('parent.is_have_width', '=', False)]}" />
+	                					<field name="length_balance" force_save="1" attrs="{'column_invisible': ['|', ('parent.parent_product_length', '!=', 0),('parent.is_have_length', '=', False)]}" />
+	                					<field name="kg_balance" force_save="1" attrs="{'column_invisible': ['|', ('parent.parent_product_kg', '!=', 0),('parent.is_have_kg', '=', False)]}" />
+	                					<field name="thickness_balance" force_save="1" invisible="1" />
+	                					<field name="across_flat_balance" force_save="1" invisible="1" />
+	                					<field name="width_2_balance" force_save="1" invisible="1" />
+	                					<field name="mesh_number_balance" force_save="1" invisible="1" />
+	                					<field name="mesh_size_balance" force_save="1" invisible="1" />
+	                					<field name="hole_diameter_balance" force_save="1" invisible="1" />
+	                					<field name="pitch_balance" force_save="1" invisible="1" />
+	                					<field name="inner_diameter_balance" force_save="1" invisible="1" />
+	                					<field name="is_validate" readonly="1" />
+	                					<button type="object" string="Validate" name="action_validate_balance" class="oe_highlight" attrs="{'invisible': [('is_validate', '=', True)]}" />
+	                					<button type="object" string="Unvalidate" name="action_validate_balance" class="oe_highlight" attrs="{'invisible': [('is_validate', '=', False)]}" />
+	                				</tree>
+	                			</field>
+	                		</page>
+	                	</notebook>
+    				</sheet>
+    			</form>
+    		</field>
+    	</record>
+
+    	<record id="view_job_order_cutting_line_form" model="ir.ui.view">
+    		<field name="name">job.order.cutting.line.form</field>
+    		<field name="model">job.order.cutting.line</field>
+    		<field name="arch" type="xml">
+    			<form string="Lines">
+    				<sheet>
+    					<group>
+    						<group>
+    							<field name="job_order_id" invisible="1" />
+    							<field name="job_order_line_id" required="1" domain="[('parent_product_id', '=', cutting_parent_product_id), ('job_order_id', '=', job_order_id)]" options="{'no_create': True, 'no_create_edit':True}" />
+
+    							<field name="cutting_parent_product_id" invisible="1" />
+    							<field name="product_ids" widget="many2many_tags" invisible="1" />
+    							<field name="product_id" invisible="1" />
+
+    							<field name="parent_product_categ_id" invisible="1" /> 
+    							<field name="is_have_diameter" invisible="1" />
+    							<!-- <field name="is_have_height" invisible="1" /> -->
+    							<field name="is_have_width" invisible="1" />
+    							<field name="is_have_thickness" invisible="1" />
+    							<field name="is_have_length" invisible="1" /> 
+    							<field name="is_have_kg" invisible="1" /> 
+    							<field name="is_have_across_flat" invisible="1" />
+    							<field name="is_have_width_2" invisible="1" />
+    							<field name="is_have_mesh_number" invisible="1" />
+    							<field name="is_have_mesh_size" invisible="1" />
+    							<field name="is_have_hole_diameter" invisible="1" />
+    							<field name="is_have_pitch" invisible="1" />
+    							<field name="is_have_inner_diameter" invisible="1" />
+    						</group>
+    						<group>
+    							<field name="done_quantity" />
+    						</group>
+    					</group>
+    					<group>
+							<separator string="Requested Dimension" />
+							<field name="requested_diameter" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+							<!-- <field name="requested_height" attrs="{'invisible': [('is_have_height', '=', False)]}" /> -->
+							<field name="requested_width" attrs="{'invisible': [('is_have_width', '=', False)]}" />
+							<field name="requested_thickness" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+							<field name="requested_length" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+							<field name="requested_kg" attrs="{'invisible': [('is_have_kg', '=', False)]}" />
+							<field name="requested_across_flat" attrs="{'invisible': [('is_have_across_flat', '=', False)]}" />
+							<field name="requested_width_2" attrs="{'invisible': [('is_have_width_2', '=', False)]}" />
+							<field name="requested_mesh_number" attrs="{'invisible': [('is_have_mesh_number', '=', False)]}" />
+							<field name="requested_mesh_size" attrs="{'invisible': [('is_have_mesh_size', '=', False)]}" />
+							<field name="requested_hole_diameter" attrs="{'invisible': [('is_have_hole_diameter', '=', False)]}" />
+							<field name="requested_pitch" attrs="{'invisible': [('is_have_pitch', '=', False)]}" />
+							<field name="requested_inner_diameter" attrs="{'invisible': [('is_have_inner_diameter', '=', False)]}" />
+    					</group>
+    				</sheet>
+    			</form>
+    		</field>
+    	</record>
+
+    	<record model="ir.ui.view" id="view_job_order_search">
+    	    <field name="name">job.order.search</field>
+    	    <field name="model">job.order</field>
+    	    <field name="arch" type="xml">
+    	       <search string="Job Orders">
+    	            <field name="name" string="Job Order" filter_domain="['|', '|', ('name', 'ilike', self), ('sale_order_id', 'ilike', self), ('location_id', 'ilike', self)]" />
+    	            <field name="name" />
+    	            <field name="sale_order_id" />
+    	            <field name="location_id" />
+    	            <separator />
+    	            <filter string="Draft" name="state_draft" domain="[('state', '=', 'draft')]" />
+    	            <filter string="Confirmed" name="state_confirm" domain="[('state', '=', 'confirm')]" />
+    	            <filter string="Done" name="state_done" domain="[('state', '=', 'done')]" />
+    	            <filter string="Cancelled" name="state_draft" domain="[('state', '=', 'cancel')]" />
+    	            <separator />
+    	            <filter string="Delivered" name="is_delivered" domain="[('is_delivered', '=', True)]" />
+    	            <group expand="0" string="Group By">
+    	                <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+    	                <filter string="Sales Order" name="group_sale_order_id"  context="{'group_by': 'sale_order_id'}" />
+    	                <filter string="Date" name="group_date" context="{'group_by': 'datetime'}" />
+    	                <filter string="Validation Status" name="group_validation_status" context="{'group_by': 'validation_status'}" />
+    	            </group>
+    	        </search>
+    	    </field>
+    	</record>
+
+		<record id="action_job_order" model="ir.actions.act_window">
+			<field name="name">Job Order</field>
+	        <field name="type">ir.actions.act_window</field>
+	        <field name="res_model">job.order</field>
+	        <field name="view_mode">tree,form</field>      
+	        <field name="help" type="html">
+	            <p class="o_view_nocontent_smmiling_face">
+	                Create a new Job Order.
+	            </p>
+	        </field>
+	        <field name="search_view_id" ref="view_job_order_search"/>
+		</record>
+
+		<record id="action_job_order_driver" model="ir.actions.act_window">
+			<field name="name">Job Order:Driver</field>
+	        <field name="type">ir.actions.act_window</field>
+	        <field name="res_model">job.order</field>
+	        <field name="domain">[('state', '=', 'done')]</field>
+	        <field name="view_mode">tree,form</field>
+	        <field name="view_ids" eval="[(5, 0, 0),
+	            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_job_order_tree_driver')}),
+	            (0, 0, {'view_mode': 'form', 'view_id': ref('view_job_order_form_driver')})]"/>      
+	        <field name="help" type="html">
+	            <p class="o_view_nocontent_smmiling_face">
+	                Create a new Job Order.
+	            </p>
+	        </field>
+	        <field name="search_view_id" ref="view_job_order_search"/>
+		</record>
+
+		<menuitem id="menu_teckleong_root" name="Teckleong" sequence="80"/>
+		<menuitem id="menu_driver_root" name="Driver" sequence="80"/>
+		<menuitem id="menu_job_order" parent="menu_teckleong_root" action="action_job_order" sequence="10"/>
+		<menuitem id="menu_job_order_driver" parent="menu_driver_root" action="action_job_order_driver" sequence="10"/>
+	</data>
+</odoo>

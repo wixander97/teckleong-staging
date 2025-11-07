@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_teckleong_notification_wizard" model="ir.ui.view">
+        <field name="name">teckleong.notification.wizard</field>
+        <field name="model">teckleong.notification.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Purchase Creation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" nolabel="1" readonly="1" />
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Close" name="action_confirm" type="object" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="teckleong_notification_wizard" model="ir.actions.act_window">
+        <field name="name">Notification</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">teckleong.notification.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_teckleong_notification_wizard" />
+        <field name="target">new</field>
+    </record>
+</odoo>

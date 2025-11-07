@@ -1,0 +1,34 @@
+.table-details th, .table-details td{
+	border: 1px solid #757575;
+	vertical-align: middle !important;
+	text-align: center;
+
+}
+
+.no-border{
+	border: none !important;
+}
+
+th{
+	font-weight: bold;
+}
+
+.paynow-barcode{
+	max-height: 4cm;
+	max-width: 8cm;
+}
+
+.hide-overflow{
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.hide-text{
+	text-indent: -9999px;
+}
+
+.no-wrap{
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}

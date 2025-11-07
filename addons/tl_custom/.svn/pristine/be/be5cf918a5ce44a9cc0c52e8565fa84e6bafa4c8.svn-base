@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_move_form" model="ir.ui.view">
+	      <field name="name">stock.move.form.inherit.teckleong.custom</field>
+	      <field name="model">stock.move</field>
+	      <field name="inherit_id" ref="stock.view_stock_move_operations" />
+	      <field name="arch" type="xml">
+	      	<xpath expr="//field[@name='move_line_ids']" position="before">
+	      		<group>
+	      			<field name="notes" />
+	      			<field name="balance_qty" invisible="1" />
+	      			<field name="is_more_than_demand" invisible="1" />
+	      		</group>
+	      		<group>
+	      			<div attrs="{'invisible': [('is_more_than_demand', '=', False)]}" class="text-center text-danger">Notification: The Amount of Done Quantity inputted is more than the Demand Quantity.</div>
+	      		</group>
+	      	</xpath>
+	      </field>
+	 </record>
+
+	 <record id="view_move_line_tree" model="ir.ui.view">
+	     <field name="name">stock.move.line.tree.inherit.teckleong.custom</field>
+	     <field name="model">stock.move.line</field>
+	     <field name="inherit_id" ref="stock.view_move_line_tree" />
+	     <field name="arch" type="xml">
+	     	<!-- <xpath expr="//field[@name='']" position="">
+	     		<field name="" />
+	     	</xpath> -->
+	     	<xpath expr="//field[@name='reference']" position="after">
+	     		<field name="origin" />
+	     		<field name="picking_partner_id" />
+	     	</xpath>
+	     	<xpath expr="//field[@name='product_id']" position="after">
+	     		<field name="product_uom_id" />
+	     	</xpath>
+	     </field>
+	 </record>
+
+	 <record id="stock_move_line_view_search" model="ir.ui.view">
+	     <field name="name">stock.move.line.search.inherit.teckleong.custom</field>
+	     <field name="model">stock.move.line</field>
+	     <field name="inherit_id" ref="stock.stock_move_line_view_search" />
+	     <field name="arch" type="xml">
+	     	<xpath expr="//field[@name='picking_id']" position="after">
+	     		<field name="picking_partner_id" />
+	     	</xpath>
+	     </field>
+	 </record>
+</odoo>

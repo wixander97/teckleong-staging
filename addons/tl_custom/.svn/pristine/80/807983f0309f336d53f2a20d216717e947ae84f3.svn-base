@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="sale_order_view_tree" model="ir.ui.view">
+		<field name="name">sale.order.tree.inherit.teckleong.custom</field>
+		<field name="model">sale.order</field>
+		<field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding" />
+		<field name="arch" type="xml">
+			<xpath expr="//field[@name='amount_total']" position="replace">
+				<field name="substitute_total" />
+			</xpath>
+			<xpath expr="//field[@name='state']" position="after">
+				<field name="delivery_state" optional="hide" />
+			</xpath>
+		</field>
+	</record>
+
+	<record id="sale_order_view_form" model="ir.ui.view">
+	      <field name="name">sale.order.form.inherit.teckleong.custom</field>
+	      <field name="model">sale.order</field>
+	      <field name="inherit_id" ref="sale.view_order_form" />
+	      <field name="arch" type="xml">
+	      	<xpath expr="//button[@name='action_view_invoice']" position="after">
+	      		<button class="oe_stat_button" attrs="{'invisible': [('state', '=', 'draft')]}" type="object" name="action_view_job_order" icon="fa-check-square-o" string="Job Order" />
+	      		<button class="oe_stat_button" type="object" name="action_view_purchase" icon="fa-shopping-cart" string="Purchase" />
+	      	</xpath>
+
+	      	<xpath expr="//button[@name='action_draft']" position="after">
+	      		<button string="Create PO" type="action" name="%(tl_custom.teckleong_purchase_creation_wizard)d" />
+	      	</xpath>
+
+	      	<xpath expr="//page[@name='optional_products']" position="attributes">
+                <attribute name="invisible">1</attribute>
+	      	</xpath>
+
+	      	<xpath expr="//page[@name='customer_signature']" position="attributes">
+                <attribute name="invisible">1</attribute>
+	      	</xpath>
+
+			<xpath expr="//page[@name='order_lines']" position="attributes">
+                <attribute name="invisible">1</attribute>
+	      	</xpath>
+
+	      	<xpath expr="//field[@name='order_line']/tree//field[@name='name']" position="after">
+	      		<field name="electrode_number" />
+	      		<field name="batch_number" readonly="1" />
+	      		<field name="custom_order_line_id" invisible="1" />
+	      	</xpath>
+			<xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="after">
+	      		<field name="discount_overall" invisible="1"/>
+	      	</xpath>
+
+	      	<xpath expr="//field[@name='partner_id']" position="after">
+	      		<field name="is_subcontractor" />
+	      	</xpath>
+			<xpath expr="//field[@name='tag_ids']" position="after">
+	      		<field name="po_ref" />
+	      	</xpath>  
+			  <xpath expr="//field[@name='payment_term_id']" position="after">
+	      		<field name="discount_overall" attrs="{'readonly': [('state', 'in', ['done', 'cancel', 'sale'])]}" />
+	      		<field name="self_collection_location" />
+	      		<field name="substitute_total" invisible="1" />
+	      		<field name="is_partial" invisible="1" />
+	      		<field name="is_force_jo" attrs="{'invisible': [('is_partial', '=', False)]}" />
+	      	</xpath>  
+			  
+			<xpath expr="//page[@name='other_information']" position="inside">
+				<field name="remarks" placeholder="Remarks" />
+			</xpath>
+	      	
+	      	<xpath expr="//page[@name='order_lines']" position="after">
+	      	    <page string="Order Lines" name="custom_dimension">
+	      	        <field name="custom_dimension_line_ids" attrs="{'readonly': [('state', 'in', ['done', 'cancel', 'sale'])]}">
+	      	        	<form force_save="1" >
+                    		<sheet>
+							    <group >
+									<group>	
+										<field name="parent_product_id" string="Product" force_save="1" required="1" options="{'no_quick_create':True,'no_create_edit':True,'no_create': True,'no_open': True}"  />
+										<field name="parent_product_categ_id" />
+										<field name="description" force_save="1" />
+										<field name="electrode_number" force_save="1" />
+										<field name="name" force_save="1" invisible="1"/>
+										<field name="child_product" force_save="1" invisible="1" />
+										<field name="batch_number" force_save="1" readonly="1" />
+										<field name="dimension_uom_id" class="no_external_link" force_save="1" options="{'no_quick_create':True,'no_create_edit':True,'no_create': True,'no_open': True}" />
+										<field name="product_uom_id" class="no_external_link" force_save="1" options="{'no_quick_create':True,'no_create_edit':True,'no_create': True,'no_open': True}" />
+										<field name="quantity" force_save="1" />
+										<field name="unit_price" force_save="1" />
+										<field name="discount" force_save="1"/> 
+										<field name="tax_ids" class="no_external_link" widget="many2many_tags" force_save="1" options="{'no_quick_create':True,'no_create_edit':True,'no_create': True,'no_open': True}" />
+										<field name="discount_overall" invisible="1"  readonly="1" force_save="1" />
+										<field name="subtotal"  force_save="1" />
+									</group >
+									<group>
+										<field name="is_parent_id" invisible="1"/>
+										<field name="delivered_qty" invisible="1" />
+										<field name="invoiced_qty" invisible="1" />
+										<field name="qty_available" attrs="{'invisible': [('is_parent_id', '=', True)]}" />
+										<field name="forecast_availability" attrs="{'invisible': [('is_parent_id', '=', True)]}" />
+										<field name="diameter" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_diameter', '!=', 0)],'invisible': [('is_have_diameter', '=', False)]}" />
+										<!-- <field name="height" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_height', '!=', 0)],'invisible': [('is_have_height', '=', False)]}"/> -->
+										<field name="width" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_width', '!=', 0)],'invisible': [('is_have_width', '=', False)]}"/>
+										<field name="thickness" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_thickness', '!=', 0)],'invisible': [('is_have_thickness', '=', False)]}" />
+										<field name="length" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False), ('master_length', '!=', 0)],'invisible': [('is_have_length', '=', False)]}"/>
+										<field name="kg" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_kg', '!=', 0)],'invisible': [('is_have_kg', '=', False)]}"/>
+										<!-- <field name="outer_diameter" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_outer_diameter', '!=', 0)],'invisible': [('is_have_outer_diameter', '=', False)]}"/> -->
+										<field name="across_flat" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_across_flat', '!=', 0)],'invisible': [('is_have_across_flat', '=', False)]}"/>
+										<!-- <field name="breadth" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_breadth', '!=', 0)],'invisible': [('is_have_breadth', '=', False)]}" /> -->
+										<field name="mesh_number" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_mesh_number', '!=', 0)],'invisible': [('is_have_mesh_number', '=', False)]}"/>
+										<field name="mesh_size" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_mesh_size', '!=', 0)],'invisible': [('is_have_mesh_size', '=', False)]}"/>
+										<field name="hole_diameter" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_hole_diameter', '!=', 0)],'invisible': [('is_have_hole_diameter', '=', False)]}"/>
+										<!-- <field name="number" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_number', '!=', 0)],'invisible': [('is_have_number', '=', False)]}"/> -->
+										<!-- <field name="opening_dimension" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_opening_dimension', '!=', 0)],'invisible': [('is_have_opening_dimension', '=', False)]}" /> -->
+										<!-- <field name="metric_number" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_metric_number', '!=', 0)],'invisible': [('is_have_metric_number', '=', False)]}"/> -->
+										<!-- <field name="size" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_size', '!=', 0)],'invisible': [('is_have_size', '=', False)]}"/> -->
+										<field name="width_2" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_width_2', '!=', 0)],'invisible': [('is_have_width_2', '=', False)]}"/>
+										<field name="pitch" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_pitch', '!=', 0)],'invisible': [('is_have_pitch', '=', False)]}"/>
+										<field name="inner_diameter" force_save="1" attrs="{'readonly': ['|',('is_parent_id', '=', False),('master_inner_diameter', '!=', 0)],'invisible': [('is_have_inner_diameter', '=', False)]}"/>
+									</group>									
+									
+								</group >
+								<group >	
+									<group >		
+										<field name="is_have_diameter" invisible="1" />
+										<!-- <field name="is_have_height" invisible="1" /> -->
+										<field name="is_have_width" invisible="1" />
+										<field name="is_have_thickness" invisible="1" />
+										<field name="is_have_length" invisible="1" />
+										<field name="is_have_kg" invisible="1" />
+										<!-- <field name="is_have_outer_diameter" invisible="1"/> -->
+										<field name="is_have_across_flat" invisible="1"/>
+										<!-- <field name="is_have_breadth" invisible="1"/> -->
+										<field name="is_have_mesh_number" invisible="1"/>
+										<field name="is_have_mesh_size" invisible="1"/>
+										<field name="is_have_hole_diameter" invisible="1"/>
+										<!-- <field name="is_have_number" invisible="1"/> -->
+										<!-- <field name="is_have_opening_dimension" invisible="1"/> -->
+										<!-- <field name="is_have_metric_number" invisible="1"/> -->
+										<!-- <field name="is_have_size" invisible="1"/> -->
+										<field name="is_have_width_2" invisible="1" />
+										<field name="is_have_pitch" invisible="1" />
+										<field name="is_have_inner_diameter" invisible="1" />
+
+										<field name="master_width"  invisible="1" />
+										<field name="master_length"  invisible="1" />
+										<!-- <field name="master_height"  invisible="1" /> -->
+										<field name="master_diameter"  invisible="1" />
+										<field name="master_thickness"  invisible="1" />
+										<field name="master_kg"  invisible="1" />
+										<!-- <field name="master_outer_diameter" invisible="1" /> -->
+										<field name="master_across_flat" invisible="1" />
+										<!-- <field name="master_breadth" invisible="1" /> -->
+										<field name="master_mesh_number" invisible="1" />
+										<field name="master_mesh_size" invisible="1" />
+										<field name="master_hole_diameter" invisible="1" />
+										<!-- <field name="master_number" invisible="1" /> -->
+										<!-- <field name="master_opening_dimension" invisible="1" /> -->
+										<!-- <field name="master_metric_number" invisible="1" /> -->
+										<!-- <field name="master_size" invisible="1" /> -->
+										<field name="master_width_2" invisible="1" />
+										<field name="master_pitch" invisible="1" />
+										<field name="master_inner_diameter" invisible="1" />
+									</group >		
+								</group >
+								<field name="notes" placeholder="Notes" />
+									
+							</sheet>
+						</form>
+						<tree force_save="1" >
+        					<field name="name" force_save="1" />
+        					<field name="parent_product_categ_id" />
+							<field name="child_product" force_save="1" string="Product Dimension" />
+							<field name="quantity" readonly="1" force_save="1" />
+							<field name="delivered_qty" />
+							<field name="product_type" invisible="1" />
+							<field name="forecast_availability" widget="forecast_widget" nolabel="1" />		
+							<field name="invoiced_qty" />
+							<field name="unit_price" readonly="1" force_save="1" />
+							<field name="tax_ids" readonly="1" widget="many2many_tags" force_save="1" />
+							<field name="discount"  force_save="1" />
+							<field name="discount_overall"  readonly="1" invisible="1"  force_save="1" />
+							<field name="subtotal" widget="monetary" readonly="1"  force_save="1" />
+							<field name="currency_id" invisible="1"/>
+	                	</tree>	
+							
+	      	        </field>
+
+					<group name="note_group" col="6" class="mt-2 mt-md-0">
+                        <group colspan="4">
+                            <!-- <field name="note" nolabel="1" placeholder="Terms and conditions..."/> -->
+                        </group>
+                        <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                            <field name="tax_totals_json2" widget="account-tax-totals-field" nolabel="1" colspan="2"/>
+                        </group>
+                        <div class="oe_clear"/>
+                    </group>  
+	      	    </page>
+	      	</xpath>
+	      </field>
+	 </record>
+</odoo>

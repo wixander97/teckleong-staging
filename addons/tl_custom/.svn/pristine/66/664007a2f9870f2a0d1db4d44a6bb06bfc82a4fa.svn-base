@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="product_template_only_form_view" model="ir.ui.view">
+	      <field name="name">product.template.product.form.inherit.teckleong.custom</field>
+	      <field name="model">product.template</field>
+	      <field name="inherit_id" ref="product.product_template_only_form_view" />
+	      <field name="arch" type="xml">
+  	      	<xpath expr="//div[@name='options']" position="inside">
+  	      		<span class="d-inline-block">
+  		      		<field name="is_parent_product" />
+  	      		    <label for="is_parent_product"/>
+  	      		</span>
+  	      		<span class="d-inline-block">
+  		      		<field name="is_trading_route" />
+  	      		    <label for="is_trading_route"/>
+  	      		</span>
+  	      	</xpath>
+	      	      	
+	      	<xpath expr="//field[@name='company_id']" position="after">
+	      		<field name="parent_product_id" attrs="{'invisible': [('is_parent_product', '=', True)]}" />
+	      		<field name="diameter" attrs="{'invisible': [('is_have_diameter', '=', False)]}" />
+                <field name="height" attrs="{'invisible': [('is_have_height', '=', False)]}" />
+                <field name="width" attrs="{'invisible': [('is_have_width', '=', False)]}" />
+                <field name="thickness" attrs="{'invisible': [('is_have_thickness', '=', False)]}" />
+                <field name="length" attrs="{'invisible': [('is_have_length', '=', False)]}" />
+                <field name="kg" attrs="{'invisible': [('is_have_kg', '=', False)]}" />
+                <field name="dimension_uom_id" />
+                <field name="is_have_diameter" invisible="1" />
+                <field name="is_have_height" invisible="1" />
+                <field name="is_have_width" invisible="1" />
+                <field name="is_have_thickness" invisible="1" />
+                <field name="is_have_length" invisible="1" />
+                <field name="is_have_kg" invisible="1" />
+	      	</xpath>
+	      </field>
+	 </record>
+
+	 <record id="`" model="ir.ui.view">
+	 	<field name="name">product.template.search.inherit.teckleong.custom</field>
+	 	<field name="model">product.template</field>
+	 	<field name="inherit_id" ref="product.product_template_search_view" />
+	 	<field name="arch" type="xml">
+	 		<xpath expr="//filter[@name='services']" position='before'>
+	 			<filter string="Trading Route" name="is_trading_route" domain="[('is_trading_route', '=', True)]"/>
+	 			<filter string="Is Parent Product" name="is_parent_product" domain="[('is_parent_product', '=', True)]"/>
+	 		</xpath>
+	 		<xpath expr="//filter[@name='categ_id']" position="after">
+                <filter string="Parent Product" name="parent_product_id" context="{'group_by':'parent_product_id'}"/>
+	 		</xpath>
+	 	</field>
+	 </record>
+</odoo>

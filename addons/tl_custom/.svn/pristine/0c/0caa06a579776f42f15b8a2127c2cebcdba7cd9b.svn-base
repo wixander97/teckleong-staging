@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="sale_order_view_form" model="ir.ui.view">
+	      <field name="name">sale.order.form.inherit.teckleong.custom</field>
+	      <field name="model">sale.order</field>
+	      <field name="inherit_id" ref="sale.view_order_form" />
+	      <field name="arch" type="xml">
+	      	<xpath expr="//button[@name='action_view_invoice']" position="after">
+	      		<button class="oe_stat_button" attrs="{'invisible': [('state', '=', 'draft')]}" type="object" name="action_view_job_order" icon="fa-check-square-o" string="Job Order" />
+	      	</xpath>
+
+	      	<xpath expr="//page[@name='optional_products']" position="attributes">
+                <attribute name="invisible">1</attribute>
+	      	</xpath>
+
+	      	<xpath expr="//page[@name='customer_signature']" position="attributes">
+                <attribute name="invisible">1</attribute>
+	      	</xpath>
+
+	      	<xpath expr="//field[@name='order_line']/tree//field[@name='name']" position="after">
+	      		<field name="electrode_number" />
+	      		<field name="batch_number" />
+	      	</xpath>
+	      	
+	      	<xpath expr="//page[@name='order_lines']" position="after">
+	      	    <page string="Custom Dimension" name="custom_dimension">
+	      	        <field name="custom_dimension_line_ids">
+	      	        	<tree editable="bottom">
+	      	        		<field name="parent_product_id" required="1" domain="[('is_parent_product', '=', True)]" />
+	      	        		<field name="description" />
+	      	        		<field name="diameter" />
+	      	        		<field name="height" />
+	      	        		<field name="width" />
+	      	        		<field name="thickness" />
+	      	        		<field name="length" />
+	      	        		<field name="dimension_uom_id" />
+	      	        		<field name="product_uom_id" />
+	      	        		<field name="quantity" />
+	      	        		<field name="unit_price" />
+	      	        		<field name="tax_ids" widget="many2many_tags" />
+	      	        		<field name="subtotal" />
+	      	        	</tree>
+	      	        </field>
+	      	    </page>
+	      	</xpath>
+	      </field>
+	 </record>
+</odoo>

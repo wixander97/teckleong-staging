@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_job_order">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="web.basic_layout">
+                <div class="header">
+                    <link rel="stylesheet" href="/tl_custom/static/css/job_order_report.css" />
+                    <div class="job-order-header">
+                        <div class="job-order-header-left">
+                        <!--     <div><img class="job-order-header-left-logo" src="/tl_custom/static/img/logo.jpeg" style="width: 300px;" /></div>
+                            <div style="margin-bottom: 10px;">
+                                <span style="margin-right: 15px;">Tel: +65 6398 0020</span>
+                                <span>Fax: +65 6398 0050</span>    
+                            </div> -->
+                            <div style="font-size: 1.4em;">
+                                <b>JOB FORM : <t t-esc="o.name" /></b>
+                            </div>
+                            <div>
+                                <b>Issued By : </b><t t-esc="o.sale_order_id.user_id.name" />
+                            </div>
+                            <div>
+                                <b>Checked By : </b> -
+                            </div>
+                        </div>
+                        <div class="job-order-header-right">
+                            <div style="font-size: 1.5em;">
+                                <b>Customer : </b><t t-esc="o.sale_order_id.partner_id.name" />
+                            </div>
+                          <!--   <div style="font-size: 2.2em;">
+                                <b>JOB FORM</b>
+                            </div> -->
+                            <div style="font-size: 0.8em; margin-bottom: 20px;">
+                                <span>Page : </span>
+                                <span class="page" /> of <span class="topage" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page">
+                    <link rel="stylesheet" href="/tl_custom/static/css/job_order_report.css" />
+                    <table class="table-head">
+                        <thead>
+                            <tr>
+                                <td>Delivery Order Ref</td>
+                                <td>Total Quantity</td>
+                                <td>Delivery On / By</td>
+                                <td>Job Form Date</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><t t-esc="o.do_id.name" /></td>
+                                <td>
+                                    <t t-set="lines" t-value="o.job_order_line_ids" />
+                                    <t t-set="total_quantity" t-value="0"/>
+                                    <t t-foreach="lines" t-as="line">
+                                        <t t-set="total_quantity" t-value="total_quantity + line.quantity" />
+                                    </t>
+                                    <t t-esc="'%.2f'%total_quantity" />
+                                </td>
+                                <td><t t-esc="o.do_id.scheduled_date" t-options='{"widget": "date","format": "dd/MM/yyyy"}' /></td>
+                                <td><t t-esc="o.datetime" t-options='{"widget": "date","format": "dd/MM/yyyy"}' /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table-product">
+                        <thead>
+                            <tr>
+                                <td>Item</td>
+                                <td>Dimensions</td>
+                                <td>Description</td>
+                                <td>S/N</td>
+                                <td>Quantity(To Cut)</td>
+                                <td>Location</td>
+                                <td>Quantity(Done)</td>
+                                <td>Marking(Balance)</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="count" t-value="1"/>
+                            <t t-set="cuttings" t-value="o.job_order_cutting_ids" />
+                            <t t-foreach="cuttings" t-as="cutting">
+                                <t t-foreach="cutting.line_ids" t-as="cutting_line">
+                                    <tr style="font-weight: bold;">
+                                        <td><t t-esc="count" /></td>
+                                        <td><t t-esc="cutting_line.job_order_line_id.product_id.name" /></td>
+                                        <td><t t-esc="cutting_line.job_order_line_id.product_id.categ_id.name" /></td>
+                                        <td><t t-esc="cutting_line.job_order_line_id.electrode_number" /></td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td><t t-esc="'%.2f'%cutting_line.done_quantity" />  <t t-esc="cutting_line.job_order_line_id.product_id.uom_id.name" /></td>
+                                        <td>-</td>
+                                    </tr>
+
+                                    <t t-set="count" t-value="count + 1"/>
+                                </t>
+                                <tr style="font-size: 0.8em;">
+                                    <td colspan="2" style="text-align: right;">To take/cut : </td>
+                                    <td><t t-esc="cutting.product_id.name" /></td>
+                                    <td><t t-esc="cutting.lot_id.name" /></td>
+                                    <td>1.00 <t t-esc="cutting_line.product_id.uom_id.name" /></td>
+                                    <td><t t-esc="cutting.lot_location_id.location_id.name" />/<t t-esc="cutting.lot_location_id.name" /></td>
+                                    <td>-</td>
+                                    <td>
+                                        <t t-foreach="cutting.balance_ids" t-as="cutting_balance">
+                                            <t t-esc="cutting_balance.parent_product_id.name" /> 
+                                            <t t-if="cutting_balance.parent_product_id.width == 0 and cutting_balance.parent_product_id.categ_id.is_have_width">
+                                                x <t t-esc="cutting_balance.width_balance" />mm
+                                            </t>
+                                            <t t-if="cutting_balance.parent_product_id.length == 0 and cutting_balance.parent_product_id.categ_id.is_have_length">
+                                                x <t t-esc="cutting_balance.length_balance" />mm
+                                            </t>
+                                            (1.00 Units)
+                                            <br /> 
+                                           <!--  <t t-esc="cutting_line_balance.parent_product_id.name" />
+                                            <t t-if="cutting_line_balance.parent_product_id.categ_id.is_have_width and cutting_line_balance.parent_product_id.width == 0">
+                                                - <t t-esc="cutting_line_balance.width_balance" />
+                                            </t>
+                                            <t t-if="cutting_line_balance.parent_product_id.categ_id.is_have_length and cutting_line_balance.parent_product_id.length == 0">
+                                                x <t t-esc="'%.0f'%cutting_line_balance.length_balance" />mm
+                                            </t>
+                                             (1.00 Units)
+                                             <br /> -->
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+
+                  <!--           <t t-set="lines" t-value="o.job_order_line_ids" />
+                            <t t-set="count" t-value="1"/>
+
+                            <t t-foreach="lines" t-as="line">
+                                <tr style="font-weight: bold;">
+                                    <td><t t-esc="count" /></td>
+                                    <td><t t-esc="line.product_id.name" /></td>
+                                    <td><t t-esc="line.product_id.categ_id.name" /></td>
+                                    <td><t t-esc="line.electrode_number" /></td>
+                                    <td><t t-esc="'%.2f'%line.quantity" /> <t t-esc="line.product_id.uom_id.name" /></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+
+                                <t t-set="cutting_lines" t-value="o.job_order_cutting_ids" />
+                                <t t-foreach="cutting_lines" t-as="cutting_line">
+                                    <t t-set="break" t-value="False" />
+                                    <t t-foreach="cutting_line.line_ids" t-as="cutting_line_product">
+                                        <t t-if="break == False">
+                                            <tr style="font-size: 0.8em;">
+                                                <t t-if="cutting_line_product.job_order_line_id.id == line.id">
+                                                    <td colspan="2" style="text-align: right;">To take/cut :</td>
+                                                    <td><t t-esc="cutting_line.product_id.name" /></td>
+                                                    <td><t t-esc="cutting_line.lot_id.name" /></td>
+                                                    <td>1.00 <t t-esc="cutting_line.product_id.uom_id.name" /></td>
+                                                    <td><t t-esc="cutting_line.lot_location_id.location_id.name" />/<t t-esc="cutting_line.lot_location_id.name" /></td>
+                                                    <td><t t-esc="'%.2f'%cutting_line_product.done_quantity" /> <t t-esc="cutting_line.product_id.uom_id.name" /></td>
+                                                    <td>
+                                                        <t t-if="cutting_line_product.id == cutting_line.line_ids[0].id">
+                                                            <t t-foreach="cutting_line.balance_ids" t-as="cutting_line_balance">
+                                                                <t t-esc="cutting_line_balance.parent_product_id.name" />
+                                                                <t t-if="cutting_line_balance.parent_product_id.categ_id.is_have_width and cutting_line_balance.parent_product_id.width == 0">
+                                                                    - <t t-esc="cutting_line_balance.width_balance" />
+                                                                </t>
+                                                                <t t-if="cutting_line_balance.parent_product_id.categ_id.is_have_length and cutting_line_balance.parent_product_id.length == 0">
+                                                                    x <t t-esc="'%.0f'%cutting_line_balance.length_balance" />mm
+                                                                </t>
+                                                                 (1.00 Units)
+                                                                 <br />
+                                                            </t>
+                                                        </t>
+                                                    </td>
+
+                                                    <t t-set="break" t-value="True" />
+                                                </t>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </t>
+                                <t t-set="count" t-value="count + 1"/>
+                            </t> -->
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_job_order_report" model="report.paperformat">
+        <field name="name">Job Order</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_job_order" model="ir.actions.report">
+        <field name="name">Job Order</field>
+        <field name="model">job.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">tl_custom.report_job_order</field>
+        <field name="report_file">tl_custom.report_job_order</field>
+        <field name="binding_model_id" ref="model_job_order" />
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="tl_custom.paperformat_job_order_report"/>
+    </record>
+</odoo>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_category_property_form" model="ir.ui.view">
+	    <field name="name">product.category.property.form.inherit.teckleong.custom</field>
+	    <field name="model">product.category</field>
+	    <field name="inherit_id" ref="product.product_category_form_view"/>
+	    <field name="arch" type="xml">
+  	      	<xpath expr="//group[@name='account_property']" position="inside">
+                <group string="Product Dimension">
+	        		<field name="is_have_diameter" />
+	        		<field name="is_have_height" />
+	        		<field name="is_have_width" />
+	        		<field name="is_have_thickness" />
+	        		<field name="is_have_length" />
+	        	</group>
+	        </xpath>
+	    </field>
+	</record>
+</odoo>

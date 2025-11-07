@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_move_form" model="ir.ui.view">
+	      <field name="name">stock.move.form.inherit.teckleong.custom</field>
+	      <field name="model">stock.move</field>
+	      <field name="inherit_id" ref="stock.view_stock_move_operations" />
+	      <field name="arch" type="xml">
+	      	<xpath expr="//field[@name='move_line_ids']" position="before">
+	      		<group>
+	      			<field name="notes" />
+	      		</group>
+	      	</xpath>
+	      </field>
+	 </record>
+</odoo>

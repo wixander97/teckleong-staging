@@ -1,0 +1,95 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+from datetime import datetime, time
+from dateutil.relativedelta import relativedelta
+from functools import partial
+from itertools import groupby
+import json
+
+from markupsafe import escape, Markup
+from pytz import timezone, UTC
+from werkzeug.urls import url_encode
+
+from odoo import api, fields, models, _
+from odoo.osv import expression
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from odoo.tools.float_utils import float_compare, float_is_zero, float_round
+from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.tools.misc import formatLang, get_lang
+
+
+class PurchaseOrder(models.Model):
+    _inherit = "purchase.order"
+
+    def action_set_elec_number(self):
+        for purchase in self:
+            for line in purchase.order_line:
+                line.elec_number = line.electrode_number
+
+    @api.onchange('shipping_term')
+    def onchange_shipping_term(self):
+        self.self_collection_id = False
+
+    sale_order_id = fields.Many2one('sale.order', 'Sales')
+    shipping_term = fields.Selection([
+        ('self_collection','Self Collection'),
+        ( 'delivery', 'Delivery'),
+    ],string='Shipping Term', default='delivery')
+    self_collection_id = fields.Many2one('res.partner', 'Self Collection')
+    partner_parent_id = fields.Many2one('res.partner', string='Partner Parent', related='partner_id.parent_id')
+
+class PurchaseOrderLine(models.Model):
+    _inherit = 'purchase.order.line'
+
+    def _product_id_change(self):
+        res = super(PurchaseOrderLine, self)._product_id_change()
+
+        self.name = self.product_id.name
+
+        return res
+
+    @api.depends('order_id', 'order_id.date_order')
+    def _compute_date_order(self):
+        for line in self:
+            line.date_order = line.order_id.date_order
+
+    def _compute_batch_number(self):
+        for line in self:
+            batch_number = ''
+            moves = line.move_ids
+            move_lines = self.env['stock.move.line']
+
+            for move in moves.filtered(lambda x: x.picking_id.picking_type_id.code == 'incoming'):
+                move_lines += move.move_line_nosuggest_ids
+
+            if move_lines:
+                for lot in move_lines.mapped('lot_id.name'):
+                    batch_number += lot
+
+                    if lot !=  move_lines.mapped('lot_id.name')[-1]:
+                        batch_number += ';'
+                
+            line.batch_number = batch_number
+
+    electrode_number = fields.Char('Electrode Number', related='custom_order_line_id.electrode_number')
+    elec_number = fields.Char('Electrode Number')
+    batch_number = fields.Char('Batch Number', compute='_compute_batch_number')
+    custom_order_line_id = fields.Many2one('sale.order.custom.dimension.line', string='Order Line')
+
+    width = fields.Float('Width', related='product_id.width')
+    length = fields.Float('Length', related='product_id.length')
+    kg = fields.Float('Kg', related='product_id.kg')
+    diameter = fields.Float('Diameter(OD)', related='product_id.diameter')
+    thickness = fields.Float('Thickness', related='product_id.thickness')
+    across_flat = fields.Float('Across Flat', related='product_id.across_flat')
+    mesh_number = fields.Float('Mesh Number', related='product_id.mesh_number')
+    mesh_size = fields.Float('Mesh Size', related='product_id.mesh_size')
+    hole_diameter = fields.Float('Hole Diameter', related='product_id.hole_diameter')
+    width_2 = fields.Float('Width 2', related='product_id.width_2')
+    pitch = fields.Float('Pitch', related='product_id.pitch')
+    inner_diameter = fields.Float('Inner Diameter', related='product_id.inner_diameter')
+
+    user_id = fields.Many2one('res.users', string='Purchase Representative', related='order_id.user_id')
+    product_categ_id = fields.Many2one('product.category', string='Product Category', related='product_id.categ_id')
+
+    date_order = fields.Datetime(store=True, compute='_compute_date_order')

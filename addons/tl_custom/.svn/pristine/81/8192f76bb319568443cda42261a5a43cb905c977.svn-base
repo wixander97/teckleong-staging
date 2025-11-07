@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="paperformat_tl_custom_delivery_order" model="report.paperformat">
+            <field name="name">Teckleong Delivery Order</field>
+            <field name="default" eval="True" />
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">115</field>
+            <field name="margin_bottom">47</field>
+            <field name="margin_left">3</field>
+            <field name="margin_right">3</field>
+            <field name="header_line" eval="False" />
+            <field name="header_spacing">110</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="stock.action_report_delivery" model="ir.actions.report">
+            <field name="name">Delivery Order</field>
+            <field name="paperformat_id" ref="tl_custom.paperformat_tl_custom_delivery_order"/>
+        </record>
+
+        <template id="stock.report_delivery_document">
+            <t t-call="web.html_container">
+                <t t-call="web.basic_layout">
+                    <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)" />
+                    <t t-set="partner" t-value="o.partner_id or (o.move_lines and o.move_lines[0].partner_id) or False"/>
+                    <div class="header">
+                        <link rel="stylesheet" href="/tl_custom/static/css/job_order_report.css" />
+                        <link rel="stylesheet" href="/tl_custom/static/css/tl_report.css" />
+                        <div class="job-order-header">
+                            <div class="job-order-header-left">
+                                <div class="job-order-header-left-logo">
+                                    <div style="margin-right: 10px;">
+                                        <img src="/tl_custom/static/img/tl_icon.png" width="100px" />
+                                    </div>
+                                    <div class="job-order-header-left-logo-text">
+                                        <div style="color: red; letter-spacing: 22px; font-weight: bold; font-size: 1.65em; font-family: Arial Black;">德隆金属私人有限公司</div>
+                                        <div class="d-flex" style="margin-top:5px;">
+                                            <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;">TECK</div>
+                                            <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">LEONG</div>
+                                            <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">METALS</div>
+                                            <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:7px;">PTE</div>
+                                            <div style="color: black; font-weight: bold; font-size: 1.9em; font-family: Arial Black;margin-left:8px;">LTD</div>
+                                        </div>
+                                        <div style="font-size: 1.2em;margin-top:13px;">
+                                            <span style="margin-right: 118px;">Tel : +65 6398 0020</span><span>Fax : +65 6398 0050</span>
+                                        </div>
+                                    </div>  
+                                </div>
+                            </div>
+                            <div class="job-order-header-right ">
+                                <div class="job-order-header-right-child" style="margin-top: -10px">
+                                    <span style="text-transform: uppercase;font-size:31px;"> delivery order </span>
+                                </div>
+                                <div style="font-size: 0.8em; margin-bottom: 20px;">
+                                    <span>Page : </span>
+                                    <span class="page" /> of <span class="topage" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex w-100">
+                            <div class="pb-2 w-50">
+                                <t t-set="rso" t-value="request.env['sale.order']" />
+                                <t t-set="rso1" t-value="rso.search([('name', '=',o.origin)],limit=1)" />  
+                                <p style=" padding-top:-10px;">
+                                    <div class="font-weight-bold">Order Address :</div>
+                                    <div>
+                                        <t t-if="o.partner_id.parent_id.name">
+                                            <t t-esc="o.partner_id.parent_id.name" />
+                                        </t>
+                                        <t t-else="">
+                                            <div class="hide-text">-</div>
+                                        </t>
+                                    </div>
+                                    <div>
+                                        <t t-if="o.partner_id.street">
+                                            <t t-esc="o.partner_id.street" />
+                                        </t>
+                                        <t t-else="">
+                                            <div class="hide-text">-</div>
+                                        </t>
+                                    </div>
+                                    <div>
+                                        <t t-if="o.partner_id.street2">
+                                            <t t-esc="o.partner_id.street2" />
+                                        </t>
+                                        <t t-else="">
+                                            <div class="hide-text">-</div>
+                                        </t>
+                                    </div>
+                                    <div>
+                                        <t t-if="o.partner_id.country_id.name or o.partner_id.zip">
+                                            <t t-esc="o.partner_id.country_id.name" /> <t t-esc="o.partner_id.zip" />
+                                        </t>
+                                        <t t-else="">
+                                            <div class="hide-text">-</div>
+                                        </t>
+                                    </div>
+                                </p>
+                                <p>
+                                    <div>
+                                        <span>
+                                            <t t-if="o.partner_id.company_type == 'person'">Attn: </t><t t-esc="o.partner_id.name" />
+                                        </span>
+                                    </div>
+                                    <div class="d-flex mt-0">
+                                        <div class="w-50">Tel: <t t-esc="o.partner_id.phone" /></div>
+                                        <div class="w-50">Fax: <t t-esc="o.partner_id.fax" /></div>
+                                    </div>
+                                    <div>
+                                        <span>Email: <t t-esc="o.partner_id.email" /></span>
+                                    </div>
+                                </p>
+                            </div>  
+                            <div class="w-50">
+                                <p>
+                                    <t t-if="o.self_collection_location == False">
+                                        <div class="font-weight-bold">Delivery Address :</div>
+                                        <div>
+                                            <t t-if="rso1.partner_shipping_id.parent_id.name">
+                                                <t t-esc="rso1.partner_shipping_id.parent_id.name" />
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </div>
+                                        <div>
+                                            <t t-if="rso1.partner_shipping_id.street">
+                                                <t t-esc="rso1.partner_shipping_id.street"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </div>
+                                        <div>
+                                            <t t-if="rso1.partner_shipping_id.street2">
+                                                <t t-esc="rso1.partner_shipping_id.street2"/>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </div>
+                                        <div> 
+                                            <t t-if="rso1.partner_shipping_id.zip or rso1.partner_shipping_id.country_id.name">
+                                                <t t-esc="rso1.partner_shipping_id.zip" /> <t t-esc="rso1.partner_shipping_id.country_id.name" />
+                                            </t>
+                                            <t t-else="">
+                                                <div class="hide-text">-</div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="font-weight-bold">Delivery Address :</div>
+                                        <div class="font-weight-bold">Self-Collection @</div>
+                                        <!--                                        <div>
+                                        <t t-esc="rso1.partner_shipping_id.parent_id.name" />
+                                        </div> -->
+                                        <div>
+                                            <t t-if="o.self_collection_location == 'amk'">
+                                                7030 Ang Mo Kio Ave 5 #01-16, Northstar@AMK
+                                            </t>
+                                            <t t-elif="o.self_collection_location == 'kel'">
+                                                Block 28 Kelantan Road #01-127
+                                            </t>
+                                            <t t-elif="o.self_collection_location == 'tuas'">
+                                                69Q Tuas South Ave 1 Seatown Industrial Centre
+                                            </t>
+                                        </div>
+                                        <div> 
+                                            <t t-if="o.self_collection_location == 'amk'">
+                                                Singapore 569880
+                                            </t>
+                                            <t t-elif="o.self_collection_location == 'kel'">
+                                                Block 28 Kelantan Road #01-127 
+                                            </t>
+                                            <t t-elif="o.self_collection_location == 'tuas'">
+                                                Singapore 637495
+                                            </t>
+                                        </div>
+                                    </t>
+                                </p>
+                                <t t-if="o.self_collection_location == False">
+                                    <p>
+                                        <div>
+                                            <span>
+                                            <t t-if="o.partner_id.company_type == 'person'">Attn: </t><t t-esc="o.partner_id.name" />
+                                            </span>
+                                        </div>
+                                        <div class="d-flex mt-0">
+                                            <div class="w-50">Tel: <t t-esc="rso1.partner_shipping_id.phone" /></div>
+                                            <div class="w-50">Fax:  <t t-esc="rso1.partner_shipping_id.fax" /></div>
+                                        </div>
+                                        <div>
+                                            <span>Email: <t t-esc="o.partner_id.email" /></span>
+                                        </div>
+                                    </p>
+                                </t>
+                            </div> 
+                        </div>
+                        <div class="row invisible">
+                            <div t-if="o.origin" class="col-auto" name="div_origin">
+                                <strong>Order:</strong>
+                                <p t-field="o.origin"/>
+                            </div>
+                            <div t-if="o.state" class="col-auto" name="div_sched_date">
+                                <strong>Shipping Date:</strong>
+                                <t t-if="o.state == 'done'">
+                                    <p t-field="o.date_done"/>
+                                </t>
+                                <t t-if="o.state != 'done'">
+                                    <p t-field="o.scheduled_date"/>
+                                </t>
+                            </div>
+                        </div>
+                        <table class="table table-bordered table-sm table-details" style="margin-top: -45px;">
+                            <thead>
+                                <tr class="w-100">
+                                    <th width="20%" scope="col">Sales Person</th>
+                                    <th width="25%%" scope="col">PO Ref</th>
+                                    <th width="25%%" scope="col">Cust Ref</th>
+                                    <th width="15%" scope="col">Sales Order</th>
+                                    <th width="15%" scope="col">Invoice</th>
+                                    <!-- <th scope="col" class="text-center " style="border: 1px solid black;width:30%;"><b>Self Collection Location </b> </th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <t t-set="rdoc" t-value="request.env['account.move']" />
+                                    <t t-set="rdo1" t-value="rdoc.search([('invoice_origin', '=',o.origin)],limit=1)" />  
+                                    <td>
+                                        <p class="m-0" t-field="rdo1.user_id.name"/>
+                                    </td>
+                                    <td>
+                                        <p class="m-0" t-field="o.po_ref"/>
+                                    </td>
+                                    <td>
+                                        <p class="m-0" t-field="o.customer_ref"/>
+                                    </td>
+                                    <td>
+                                        <p class="m-0" t-field="o.origin"/>
+                                    </td>
+                                    <td>
+                                        <span><t t-esc="rdo1.name"/></span>
+                                    </td>
+
+                         <!--            <td class="text-center" style="border: 1px solid black;">
+                                        <p class="m-0">
+                                            <t t-if="o.self_collection_location == 'amk'">
+                                                7030 Ang Mo Kio Ave 5 #01-16, Northstar@AMK Singapore 569880
+                                            </t>
+                                            <t t-elif="o.self_collection_location == 'kel'">
+                                                Block 28 Kelantan Road #01-127 Singapore 200028
+                                            </t>
+                                            <t t-elif="o.self_collection_location == 'tuas'">
+                                                69Q Tuas South Ave 1 Seatown Industrial Centre Singapore 637495 Singapore 637495
+                                            </t>
+                                        </p>
+                                    </td> -->
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered table-sm table-details" style="margin-top: -10px;">
+                            <thead>
+                                <tr class="w-100">
+                                    <th width="15%" scope="col">Payment Terms</th>
+                                    <th width="15%" scope="col">Shipping Terms</th>
+                                    <th width="15%" scope="col">Date Required</th>
+                                    <!-- <th scope="col">Date Shipped</th> -->
+                                    <th width="40%" scope="col">Ordered By</th>
+                                    <th width="15%" scope="col">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr height="57px">
+                                    <td>
+                                        <t t-set="ceks" t-value="o.origin" />
+                                        <t t-if="ceks[0] == 'S'">
+                                            <t t-set="idso" t-value="request.env['sale.order']" />
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="idso" t-value="request.env['purchase.order']" />
+                                        </t>
+                                        <t t-set="nani1" t-value="idso.search([('name', '=',o.origin )],limit=1)" />     
+                                        NET <t t-esc="nani1.payment_term_id.name"/>
+                                    </td> 
+                                    <td>
+                                        <p class="m-0" t-field="o.teckleong_stock_type"/>
+                                    </td> 
+                                    <td>
+                                        <p class="m-0" t-field="o.date_deadline" t-options='{"format": "d/MM/yyyy"}' />
+                                    </td>
+                             <!--        <td>
+                                        <p class="m-0" t-field="o.scheduled_date" t-options='{"format": "d/MM/yyyy"}' />
+                                    </td> -->
+                                    <td>
+                                        <p class="m-0" t-field="o.partner_id.name" />
+                                    </td>
+                                    <td>
+                                        <!-- <p class="m-0" t-field="o.scheduled_date" t-options='{"format": "d/MM/yyyy"}' /> -->
+                                        <p class="m-0" t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>    
+                    <div class="page">
+                        <link rel="stylesheet" href="/tl_custom/static/css/tl_report.css" />
+                        <table class="table table-bordered table-sm table-details">
+                            <thead>
+                                <tr class="w-100">
+                                    <th width="5%">No</th>
+                                    <th width="35%">Dimension</th>
+                                    <th width="25%">Description</th>
+                                    <th width="15%">S/N</th>
+                                    <th width="20%">Quantity</th>
+                              <!--       <th width="10%">Shipped</th>
+                                    <th width="10%">Unit</th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)" />
+                                <t t-set="counts" t-value="0" />
+                                <t t-foreach="lines" t-as="move">
+                                    <t t-set="counts" t-value="counts+1" />
+                                    <tr>
+                                        <td><t t-esc="counts"/></td>
+                                        <td class="text-left">
+                                            <t t-esc="move.product_id.name"/>
+                                        </td>
+                                        <td><span t-field="move.product_id.categ_id.name" t-options="{'widget': 'text'}"/></td>
+                                        <td>
+                                            <t t-foreach="move.move_line_ids" t-as="lot">
+                                                <t t-esc="lot.lot_id.name" />;
+                                            </t>
+                                        </td>
+                                        <td><span t-field="move.product_uom_qty" /> <span t-field="move.product_id.uom_id.name" /></td>
+                                        <!-- <td>0</td> -->
+                                        <!-- <td><span t-field="move.product_id.uom_id.name" /></td> -->
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td class="text-left" colspan="7">
+                                        <b>Remarks : </b>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- <table  class="table table-sm text-center"  name="stock_move_table">
+                            <thead>
+                                <tr>
+                                    <th name="th_sm_no" style="border: 1px solid black;"><strong>Line</strong></th>
+                                    <th name="th_sm_product" style="border: 1px solid black;"><strong>Product</strong></th>
+                                    <th name="th_sm_product_category" style="border: 1px solid black;"><strong>Product Category</strong></th>
+                                    <th name="th_sm_ordered" style="border: 1px solid black;"><strong>Quantity</strong></th>
+                                    <th name="th_sm_quantity" style="border: 1px solid black;"><strong>Back Ordered</strong></th>
+                                    <th name="th_sm_quantity" style="border: 1px solid black;"><strong>Shipped</strong></th>
+                                    <th name="th_sm_quantity" style="border: 1px solid black;"><strong>Unit</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="lines" t-value="o.move_lines.filtered(lambda x: x.product_uom_qty)"/>
+                                <t t-set="counts" t-value="0"/>
+                                <tr height="450px">
+                                    <td style="border: 1px solid black;">
+                                        <t t-foreach="lines" t-as="move">
+                                            <div>
+                                            <t t-set="counts" t-value="counts+1"/>
+                                            <t t-if="counts  &gt; 99">
+                                                <span><t t-esc="counts"/></span>
+                                            </t>
+                                            <t t-elif="counts &gt; 9 ">
+                                                <span>0<t t-esc="counts"/></span>
+                                            </t>
+                                            <t t-else="">
+                                                 <span>00<t t-esc="counts"/></span>
+                                            </t>
+                                            
+                                            </div>
+                                            <br/>
+                                        </t>         
+                                    </td>
+
+                                   
+                                    <td style="border: 1px solid black;height:inherit ;">
+                                        <div style="height:inherit ;position: relative;">
+                                                <t t-set="we" t-value="0"/>
+                                                <t t-foreach="lines" t-as="move">
+                                                    
+                                                    <div class="text-left">
+                                                        <b><span t-field="move.product_id"/></b><br/>
+                                                        Weight: <span t-field="move.product_id.product_tmpl_id.parent_product_id.weight"/>
+
+                                                        
+                                                        <p t-if="move.description_picking != move.product_id.name and move.description_picking != move.product_id.display_name">
+                                                            <span t-field="move.description_picking"/>
+
+                                                        </p>
+                                                        <t t-set="we" t-value="we + move.product_id.product_tmpl_id.parent_product_id.weight"/>
+                                                    </div>
+                                                </t> 
+                                            <div class="text-right" style=" position: absolute;  bottom: 0;right:0" >
+                                                <span style="font-size:12px">Approx Weight: <span t-esc="we"/> </span><br/>
+                                                <div class="d-flex"  style="font-size:12px">
+                                                    <t t-esc="o.scheduled_date"/>
+                                                    <span class="m-0 border ml-1"> KEL</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                     <td style="border: 1px solid black;">
+                                        <t t-foreach="lines" t-as="move">
+                                            <div>
+                                                 <span><t t-esc="move.product_id.categ_id.name"/></span>                                                  
+                                            </div>
+                                            <br/>
+                                        </t>       
+                                    </td>
+                                    <td style="border: 1px solid black;">
+                                        <t t-foreach="lines" t-as="move">
+                                            <div>
+                                                 <span><t t-esc="int(move.product_uom_qty)"/></span>                                                  
+                                            </div>
+                                            <br/>
+                                        </t>
+                                    </td>
+                                    <td style="border: 1px solid black;">
+                                        <t t-foreach="lines" t-as="move">
+                                        <div>
+                                        
+                                        
+                                         </div>
+                                        </t>
+                                    </td>
+                                    
+                                    <td style="border: 1px solid black;">
+                                         <t t-foreach="lines" t-as="move">
+                                          <div>
+                                               
+                                                <span><t t-esc="int(move.quantity_done)"/></span>                                    
+                                            </div>
+                                          <br/>
+                                         </t>
+                                    </td>
+                                    <td style="border: 1px solid black;">
+                                         <t t-foreach="lines" t-as="move">
+                                         <div>
+                                            <span t-field="move.product_uom"/>
+                                        </div>
+                                        <br/>
+                                    </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;" class="text-left" colspan="7">
+                                        <b>Remarks : </b>
+                                    </td>
+                                </tr>
+                                
+                            </tbody>
+                        </table> -->
+
+                       
+                    </div>
+                    <div class="footer w-100" style="align-item: center;">
+                        <t t-call="tl_custom.cs_footer_received" />
+                        <t t-call="tl_custom.cs_footer_custom" />
+                    </div>
+                </t>
+            </t>
+    </template>
+    </data>
+</odoo>

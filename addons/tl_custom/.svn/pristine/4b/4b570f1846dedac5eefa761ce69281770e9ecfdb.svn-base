@@ -1,0 +1,88 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError, ValidationError, AccessError
+
+class TeckleongChildJoCreationWizard(models.TransientModel):
+    _name = 'teckleong.child.jo.creation.wizard'
+    _description = 'Child JO Creation Wizard'
+
+    @api.model
+    def default_get(self, fields):
+        res = super(TeckleongChildJoCreationWizard, self).default_get(fields)
+        jo_obj = self.env['job.order'].browse(self._context.get('active_ids'))
+        res['jo_id'] = jo_obj
+        res['line_ids'] = []
+
+        for line in jo_obj.job_order_line_ids:
+            res['line_ids'].append((0, 0, {
+                'jo_line_id': line.id,
+            }))
+
+        return res
+
+    def action_confirm(self):
+        name = self.jo_id.name + '-' + str(len(self.jo_id.job_order_child_ids) + 1)
+
+        job_order_line_ids = []
+
+        for line in self.line_ids:
+            if line.qty > 0:
+                job_order_line_ids.append((0, 0, {
+                    'custom_order_line_id': line.jo_line_id.custom_order_line_id.id,
+                    'product_id': line.product_id.id,
+                    'quantity': line.qty,
+                    'receipt_location_id': self.location_id.lot_stock_id.id,
+                    'electrode_number': line.jo_line_id.electrode_number
+                }))
+
+        if len(job_order_line_ids) > 0:
+            self.jo_id.job_order_child_ids = [(0, 0, {
+                'name': name,
+                'customer_id': self.jo_id.customer_id.id,
+                'type': 'single_location',
+                'datetime': self.jo_id.datetime,
+                'sale_order_id': self.jo_id.sale_order_id.id,
+                'do_id_stored': self.jo_id.do_id.id,
+                'job_order_parent_id': self.jo_id.id,
+                'location_id': self.location_id.id,
+                'job_order_line_ids': job_order_line_ids,
+                'is_child': True,
+            })]
+
+        else:
+            raise ValidationError("No Product selected.")
+               
+    name = fields.Char('Reference')
+    jo_id = fields.Many2one('job.order', 'Job Order')
+    line_ids = fields.One2many('teckleong.child.jo.creation.line.wizard', 'parent_id', string='Lines')
+    location_id = fields.Many2one('stock.warehouse', 'Location')
+
+class TeckleongChildJoCreationLineWizard(models.TransientModel):
+    _name = 'teckleong.child.jo.creation.line.wizard'
+    _description = 'Child JO Creation Line Wizard'
+
+    @api.onchange('qty')
+    def onchange_done_quantity(self):
+        if self.qty > self.required_qty:
+            raise ValidationError("Quantity cannot exceed Required Quantity.")
+
+    def _compute_required_qty(self):
+        for line in self:
+            required_qty = line.jo_line_id.quantity
+
+            for child in line.parent_id.jo_id.job_order_child_ids:
+                for child_line in child.job_order_line_ids:
+                    if child_line.custom_order_line_id == line.jo_line_id.custom_order_line_id:
+                        required_qty -= child_line.quantity
+
+            line.required_qty = required_qty
+
+    name = fields.Html('Reference')
+    parent_id = fields.Many2one('teckleong.child.jo.creation.wizard', 'Parent')
+    jo_line_id = fields.Many2one('job.order.line', string='JO Line')
+    product_id = fields.Many2one('product.product', string='Customer Requested Product', related='jo_line_id.product_id')
+    required_qty = fields.Float('Required Qty', compute='_compute_required_qty')
+    qty = fields.Float('Qty')
