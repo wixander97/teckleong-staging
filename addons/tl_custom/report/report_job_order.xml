@@ -99,7 +99,7 @@
                     <!-- DIMENSION + BEFORE STOCK -->
                     <td>
                       <t t-esc="cut['dimension']"/> 
-                      (Before: <t t-esc="'%.2f' % (cut['cut_balance_stock_bc'] or 0)"/> <t t-esc="item['uom']"/>)
+                      <t t-esc="'%.2f' % (cut['cut_balance_stock_bc'] or 0)"/> <t t-esc="item['uom']"/>
                     </td>
 
                     <!-- LOT -->
@@ -132,7 +132,7 @@
                       </t>
                       <br/>
                       <t t-esc="cut['dimension']"/> 
-                      (After: <t t-esc="'%.2f' % (cut['cut_balance_stock'] or 0)"/> <t t-esc="item['uom']"/>)
+                      <t t-esc="'%.2f' % (cut['cut_balance_stock'] or 0)"/> <t t-esc="item['uom']"/>
                     </td>
 
                   </tr>
