@@ -949,7 +949,10 @@ class SaleOrder(models.Model):
                                 selected_stock = fil_stocks[0]
                                 # select length of first sorted length product
                                 selected_stock_length = fil_stocks[0]['product_length']
-                                
+                                # FIX: must be here before ANY use of pieces_per_stock
+                                product = self.env['product.product'].browse(selected_stock['product'])
+                                pieces_per_stock = product.pieces_per_stock or 0
+
                                 _logger.info(f"SELECTED STOCK:")
                                 _logger.info(f"  Stock ID: {selected_stock['id']}")
                                 _logger.info(f"  Stock Length: {selected_stock_length}mm")
